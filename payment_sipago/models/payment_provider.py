@@ -8,7 +8,7 @@ from werkzeug import urls
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.payment_sipago.const import SUPPORTED_CURRENCIES
+from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, SUPPORTED_CURRENCIES
 
 
 _logger = logging.getLogger(__name__)
@@ -20,6 +20,29 @@ class Paymentprovider(models.Model):
     code = fields.Selection(
         selection_add=[('sipago', "Sipago")], ondelete={'sipago': 'set default'}
     )
+
+    sipago_env = fields.Selection(
+        selection=[
+            ('DEVELOPMENT', "Development"),
+            ('PRODUCTION', "Production"),
+        ],
+        string="Sipago Environment",
+        groups='base.group_system',
+        required_if_provider='sipago',
+    )
+
+    sipago_client_id = fields.Char(
+        string="Sipago Client ID",
+        required_if_provider='sipago',
+        groups='base.group_system',
+    )
+    
+    sipago_client_secret = fields.Char(
+        string="Sipago Client Secret",
+        required_if_provider='sipago',
+        groups='base.group_system',
+    )
+
     sipago_access_token = fields.Char(
         string="Sipago Access Token",
         required_if_provider='sipago',

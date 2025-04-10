@@ -15,3 +15,13 @@ TRANSACTION_STATUS_MAPPING = {
 
 ERROR_MESSAGE_MAPPING = {
 }
+
+AUTH_SERVER_URL = {
+    "DEVELOPMENT": "https://auth.preprod.geopagos.com",
+    "PRODUCTION" : "https://auth.geopagos.com",
+}
+
+CHECKOUT_URL = {
+    "DEVELOPMENT": "https://api-cabal.preprod.geopagos.com",
+    "PRODUCTION" : "https://api.sipago.coop"
+}
