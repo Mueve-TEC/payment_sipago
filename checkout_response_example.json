@@ -1,0 +1,70 @@
+{
+    "data": {
+        "id": "\/api\/v2\/orders\/bc39016f-6fad-4ee1-b4c3-5eb8d1db8911",
+        "type": "Order",
+        "attributes": {
+            "uuid": "bc39016f-6fad-4ee1-b4c3-5eb8d1db8911",
+            "accountId": 169,
+            "subsidiaryId": 169,
+            "source": "api_checkout",
+            "appId": "cabal",
+            "paymentLimits": 1,
+            "orderNumber": "0000169-0000339158",
+            "price": {
+                "currency": "032",
+                "amount": 3000
+            },
+            "shipping": {
+                "name": "Precio fijo",
+                "price": {
+                    "currency": "032",
+                    "amount": 2000
+                }
+            },
+            "tip": null,
+            "items": [
+                {
+                    "name": "Silla Eames Base Madera",
+                    "quantity": 1,
+                    "unitPrice": {
+                        "currency": "032",
+                        "amount": 1000
+                    },
+                    "itemId": null
+                }
+            ],
+            "status": "PENDING",
+            "taxes": [],
+            "externalData": {
+                "user_uuid": "6c6eec46-af1e-4e18-af5d-120904391289",
+                "checkout_url": "https:\/\/cabal-checkout.preprod.geopagos.com"
+            },
+            "links": {
+                "checkout": "https:\/\/cabal-checkout.preprod.geopagos.com\/orders\/bc39016f-6fad-4ee1-b4c3-5eb8d1db8911",
+                "redirect_url": {
+                    "success": "https:\/\/dominio.com\/?ref=ok",
+                    "failed": "https:\/\/dominio.com\/?ref=fallo"
+                }
+            },
+            "hasPendingPayment": false,
+            "payment": null,
+            "payments": null,
+            "store": null,
+            "billing": null,
+            "expireLimitMinutes": 0,
+            "failedPaymentQuantityLimit": 0,
+            "webhookUrl": null,
+            "redirectOnSuccess": "https:\/\/dominio.com\/?ref=ok",
+            "redirectOnFailure": "https:\/\/dominio.com\/?ref=fallo"
+        },
+        "links": [
+            {
+                "checkout": "https:\/\/cabal-checkout.preprod.geopagos.com\/orders\/bc39016f-6fad-4ee1-b4c3-5eb8d1db8911",
+                "redirect_url": {
+                    "success": "https:\/\/dominio.com\/?ref=ok",
+                    "failed": "https:\/\/dominio.com\/?ref=fallo"
+                }
+            }
+        ]
+    }
+}
