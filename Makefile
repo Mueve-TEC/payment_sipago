@@ -17,7 +17,7 @@ auth:
 
 checkout:
 	@if [ ! -f token.txt ]; then \
-		echo "Error: no se encontró el archvio token.txt, ejecute primero el comando 'make auth'"; \ 
+		echo "Error: no se encontró el archvio token.txt, ejecute primero el comando 'make auth'"; \
 		exit 1; \
 	fi
 
