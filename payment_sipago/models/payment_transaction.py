@@ -18,35 +18,64 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    # def _get_specific_rendering_values(self, processing_values):
-    #     """ Override of `payment` to return Sipago-specific rendering values.
+    # Esto devuelve el link de pago
+    def _get_specific_rendering_values(self, processing_values):
+        """ Override of `payment` to return Sipago-specific rendering values.
 
-    #     Note: self.ensure_one() from `_get_rendering_values`.
+        Note: self.ensure_one() from `_get_rendering_values`.
 
-    #     :param dict processing_values: The generic and specific processing values of the transaction
-    #     :return: The dict of provider-specific processing values.
-    #     :rtype: dict
-    #     """
-    #     res = super()._get_specific_rendering_values(processing_values)
-    #     if self.provider_code != 'sipago':
-    #         return res
+        :param dict processing_values: The generic and specific processing values of the transaction
+        :return: The dict of provider-specific processing values.
+        :rtype: dict
+        """
+        res = super()._get_specific_rendering_values(processing_values)
+        if self.provider_code != 'sipago':
+            return res
 
-    #     # Initiate the payment and retrieve the payment link data.
-    #     payload = self._sipago_prepare_preference_request_payload()
-    #     _logger.info(
-    #         "Sending '/checkout/preferences' request for link creation:\n%s",
-    #         pprint.pformat(payload),
-    #     )
-    #     api_url = self.provider_id._sipago_make_request(
-    #         '/checkout/preferences', payload=payload
-    #     )['init_point' if self.provider_id.state == 'enabled' else 'sandbox_init_point']
+        # Initiate the payment and retrieve the payment link data.
+        # payload = self._sipago_prepare_preference_request_payload()
+        payload = {
+            "data": {
+                "attributes": {
+                    "redirect_urls": {
+                        "success": "https://dominio.com/?ref=ok",
+                        "failed": "https://dominio.com/?ref=fallo"
+                    },
+                    "currency": "032",
+                    "shipping": {
+                        "name": "Precio fijo",
+                        "price": {
+                            "currency": "032",
+                            "amount": 2000
+                        }
+                    },
+                    "items": [{
+                        "id": 31,
+                        "name": "Silla Eames Base Madera",
+                        "unitPrice": {
+                            "currency": "032",
+                            "amount": 1000
+                        },
+                        "quantity": 1
+                    }]
+                }
+            }
+        }
+        _logger.info(
+            "Sending '/checkout/preferences' request for link creation:\n%s",
+            pprint.pformat(payload),
+        )
+        api_url = self.provider_id._sipago_make_request(
+            '/api/v2/orders', payload=payload
+        )["data"]["attributes"]["links"]["checkout"]
 
-    #     # Extract the payment link URL and embed it in the redirect form.
-    #     rendering_values = {
-    #         'api_url': api_url,
-    #     }
-    #     return rendering_values
+        # Extract the payment link URL and embed it in the redirect form.
+        rendering_values = {
+            'api_url': api_url,
+        }
+        return rendering_values
 
+    # # Esto prepara el payload para la petición de pago el webhook
     # def _sipago_prepare_preference_request_payload(self):
     #     """ Create the payload for the preference request based on the transaction values.
 

@@ -1,13 +1,12 @@
 import logging
 import pprint
-
 import requests
-from werkzeug import urls
 
+from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-
 from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL, SUPPORTED_CURRENCIES
+from werkzeug import urls
 
 
 _logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ class Paymentprovider(models.Model):
         :rtype: str
         :raise ValidationError: If an HTTP error occurs.
         """
-        url = f'https://{AUTH_SERVER_URL[self.sipago_env]}/oauth/token'
+        url = f'{AUTH_SERVER_URL[self.sipago_env]}/oauth/token'
         payload = {
             "grant_type": "client_credentials",
             "client_id": self.sipago_client_id,
@@ -99,7 +98,7 @@ class Paymentprovider(models.Model):
             self.sipago_access_token = token_data.get('access_token')
             # TODO: debug
             self.sipago_access_token_expiration = fields.Datetime.now() + \
-                fields.Datetime.timedelta(seconds=token_data.get('expires_in'))
+                timedelta(seconds=token_data.get('expires_in'))
 
         except ValueError:
             raise ValidationError(
@@ -107,7 +106,7 @@ class Paymentprovider(models.Model):
 
     def token_is_expired(self):
         return self.sipago_access_token_expiration and \
-            fields.Datetime.from_string(
+            fields.Datetime.to_datetime(
                 self.sipago_access_token_expiration) < fields.Datetime.now()
 
     def ensure_valid_token(self):
@@ -116,7 +115,7 @@ class Paymentprovider(models.Model):
         if not self.sipago_access_token or self.token_is_expired():
             self.sipago_set_JWT_token()
 
-    def sipago_make_request(self, endpoint, payload=None, method='POST'):
+    def _sipago_make_request(self, endpoint, payload=None, method='POST'):
         """ Make a request to Sipago API at the specified endpoint.
 
         Note: self.ensure_one()

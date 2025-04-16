@@ -112,12 +112,9 @@ def main():
     sipago_test = SipagoTest()
     sipago_test.sipago_client_id = input("Enter your client ID: ")
     sipago_test.sipago_client_secret = input("Enter your client secret: ")
-    sipago_test.sipago_set_JWT_token()
-    print("Access Token:", sipago_test.sipago_access_token)
-    print("Token Expiration:", sipago_test.sipago_access_token_expiration)
 
     # Example of making a request
-    print("\n\n\nMaking a request to the API...")
+
     endpoint = "/api/v2/orders"
     payload = {
         "data": {
@@ -146,9 +143,14 @@ def main():
             }
         }
     }
-
+    print("Making a request to the API...")
     response = sipago_test.sipago_make_request(endpoint, payload)
-    print("Response:", response)
+
+    print("\nAccess Token:", sipago_test.sipago_access_token)
+    print("\nToken Expiration:", sipago_test.sipago_access_token_expiration)
+
+    print("\nResponse checkout link:",
+          response["data"]["attributes"]["links"]["checkout"])
 
 
 if __name__ == "__main__":
