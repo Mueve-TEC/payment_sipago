@@ -1,4 +1,3 @@
-
 import logging
 import pprint
 
@@ -8,7 +7,7 @@ from werkzeug import urls
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, SUPPORTED_CURRENCIES
+from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL, SUPPORTED_CURRENCIES
 
 
 _logger = logging.getLogger(__name__)
@@ -36,7 +35,7 @@ class Paymentprovider(models.Model):
         required_if_provider='sipago',
         groups='base.group_system',
     )
-    
+
     sipago_client_secret = fields.Char(
         string="Sipago Client Secret",
         required_if_provider='sipago',
@@ -45,7 +44,11 @@ class Paymentprovider(models.Model):
 
     sipago_access_token = fields.Char(
         string="Sipago Access Token",
-        required_if_provider='sipago',
+        groups='base.group_system',
+    )
+
+    sipago_access_token_expiration = fields.Datetime(
+        string="Sipago Token Expiration",
         groups='base.group_system',
     )
 
@@ -64,6 +67,55 @@ class Paymentprovider(models.Model):
 
     #     return providers
 
+    def sipago_set_JWT_token(self):
+        """ Get the JWT token from Sipago API.
+
+        :return: The JWT token.
+        :rtype: str
+        :raise ValidationError: If an HTTP error occurs.
+        """
+        url = f'https://{AUTH_SERVER_URL[self.sipago_env]}/oauth/token'
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": self.sipago_client_id,
+            "client_secret": self.sipago_client_secret,
+            "scope": "*"
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        try:
+            response = requests.post(
+                url, json=payload, headers=headers, timeout=10)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            _logger.exception("Failed to retrieve JWT token from Sipago API")
+            raise ValidationError(
+                _("Sipago: Failed to retrieve JWT token. Please check your credentials."))
+
+        try:
+            token_data = response.json()
+            self.sipago_access_token = token_data.get('access_token')
+            # TODO: debug
+            self.sipago_access_token_expiration = fields.Datetime.now() + \
+                fields.Datetime.timedelta(seconds=token_data.get('expires_in'))
+
+        except ValueError:
+            raise ValidationError(
+                _("Sipago: Invalid response format while retrieving JWT token."))
+
+    def token_is_expired(self):
+        return self.sipago_access_token_expiration and \
+            fields.Datetime.from_string(
+                self.sipago_access_token_expiration) < fields.Datetime.now()
+
+    def ensure_valid_token(self):
+        """Ensure the Sipago JWT token is valid and refresh it if necessary."""
+        self.ensure_one()
+        if not self.sipago_access_token or self.token_is_expired():
+            self.sipago_set_JWT_token()
+
     def sipago_make_request(self, endpoint, payload=None, method='POST'):
         """ Make a request to Sipago API at the specified endpoint.
 
@@ -77,12 +129,12 @@ class Paymentprovider(models.Model):
         :raise ValidationError: If an HTTP error occurs.
         """
         self.ensure_one()
+        self.ensure_valid_token()
 
-        # TODO: change URL
-        url = urls.url_join('https://url.com', endpoint)
+        url = urls.url_join(CHECKOUT_URL[self.sipago_env], endpoint)
         headers = {
             'Authorization': f'Bearer {self.sipago_access_token}',
-            'X-Platform-Id': 'dev_cdf1cfac242111ef9fdebe8d845d0987',  # ?????
+            'Content-Type': 'application/vnd.api+json'
         }
         try:
             if method == 'GET':
