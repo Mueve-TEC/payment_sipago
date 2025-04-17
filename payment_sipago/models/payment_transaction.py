@@ -62,7 +62,7 @@ class PaymentTransaction(models.Model):
             }
         }
         _logger.info(
-            "Sending '/checkout/preferences' request for link creation:\n%s",
+            "Sending /api/v2/orders request for link creation:\n%s",
             pprint.pformat(payload),
         )
         api_url = self.provider_id._sipago_make_request(

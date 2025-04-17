@@ -2,7 +2,7 @@ import logging
 import pprint
 import requests
 
-from datetime import timedelta
+from datetime import datetime
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL, SUPPORTED_CURRENCIES
@@ -85,9 +85,11 @@ class Paymentprovider(models.Model):
         }
 
         try:
+            _logger.info("Requesting JWT token from Sipago API")
             response = requests.post(
                 url, json=payload, headers=headers, timeout=10)
             response.raise_for_status()
+
         except requests.exceptions.RequestException as e:
             _logger.exception("Failed to retrieve JWT token from Sipago API")
             raise ValidationError(
@@ -96,23 +98,27 @@ class Paymentprovider(models.Model):
         try:
             token_data = response.json()
             self.sipago_access_token = token_data.get('access_token')
-            # TODO: debug
-            self.sipago_access_token_expiration = fields.Datetime.now() + \
-                timedelta(seconds=token_data.get('expires_in'))
+            self.sipago_access_token_expiration = datetime.fromtimestamp(
+                token_data.get('expires_in')
+            )
 
         except ValueError:
             raise ValidationError(
                 _("Sipago: Invalid response format while retrieving JWT token."))
 
     def token_is_expired(self):
-        return self.sipago_access_token_expiration and \
-            fields.Datetime.to_datetime(
-                self.sipago_access_token_expiration) < fields.Datetime.now()
+        """Check if the Sipago JWT token is expired.
+        :return: True if the token is expired, False otherwise.
+        :rtype: bool
+        """
+        return self.sipago_access_token_expiration and fields.Datetime.to_datetime(
+            self.sipago_access_token_expiration) < fields.Datetime.now()
 
     def ensure_valid_token(self):
         """Ensure the Sipago JWT token is valid and refresh it if necessary."""
-        self.ensure_one()
         if not self.sipago_access_token or self.token_is_expired():
+            _logger.info(
+                "There is no Sipago token or it is expired, refreshing it...")
             self.sipago_set_JWT_token()
 
     def _sipago_make_request(self, endpoint, payload=None, method='POST'):
@@ -151,11 +157,10 @@ class Paymentprovider(models.Model):
                     )
                     try:
                         response_content = response.json()
-                        error_code = response_content.get('error')
-                        error_message = response_content.get('message')
                         raise ValidationError("Sipago: " + _(
                             "The communication with the API failed. Sipago gave us the"
-                            " following information: '%s' (code %s)", error_message, error_code
+                            " following response:\n '%s", pprint.pformat(
+                                response_content)
                         ))
                     except ValueError:  # The response can be empty when the access token is wrong.
                         raise ValidationError("Sipago: " + _(
