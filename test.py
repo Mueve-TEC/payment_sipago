@@ -2,12 +2,16 @@ import requests
 import pprint
 from urllib.parse import urljoin
 import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class SipagoTest:
     sipago_access_token = None
-    sipago_client_secret = None
-    sipago_client_id = None
+    sipago_client_secret = os.getenv("CLIENT_SECRET")
+    sipago_client_id = os.getenv("CLIENT_ID")
     sipago_access_token_expiration = None
 
     def sipago_set_JWT_token(self):
@@ -40,9 +44,9 @@ class SipagoTest:
         try:
             token_data = response.json()
             self.sipago_access_token = token_data.get('access_token')
-            # TODO: debug
-            self.sipago_access_token_expiration = datetime.datetime.now() + \
-                datetime.timedelta(seconds=token_data.get('expires_in'))
+            print("Token data:", token_data)
+            self.sipago_access_token_expiration = datetime.datetime.fromtimestamp(
+                token_data.get('expires_in'))
 
         except ValueError:
             raise Exception(
@@ -110,8 +114,6 @@ class SipagoTest:
 
 def main():
     sipago_test = SipagoTest()
-    sipago_test.sipago_client_id = input("Enter your client ID: ")
-    sipago_test.sipago_client_secret = input("Enter your client secret: ")
 
     # Example of making a request
 
@@ -146,7 +148,6 @@ def main():
     print("Making a request to the API...")
     response = sipago_test.sipago_make_request(endpoint, payload)
 
-    print("\nAccess Token:", sipago_test.sipago_access_token)
     print("\nToken Expiration:", sipago_test.sipago_access_token_expiration)
 
     print("\nResponse checkout link:",
