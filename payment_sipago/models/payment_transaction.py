@@ -5,7 +5,7 @@ from urllib.parse import quote as url_quote
 
 from werkzeug import urls
 
-from odoo import _, api, models
+from odoo import _, api, models, fields
 from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.payment_sipago.const import ERROR_MESSAGE_MAPPING, TRANSACTION_STATUS_MAPPING
@@ -17,6 +17,32 @@ _logger = logging.getLogger(__name__)
 
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
+
+    sale_order_id = fields.Many2one(
+        comodel_name='sale.order',
+        string='Sale Order',
+        compute='_compute_sale_order_id',
+        store=False,
+    )
+
+    @api.depends('reference')
+    def _compute_sale_order_id(self):
+        """ Compute the sale order based on the reference of the transaction.
+
+        Note: This method is not stored in the database.
+
+        :return: None
+        """
+        for tx in self:
+            order_name = tx.reference.split('-')[0]
+            tx.sale_order_id = self.env['sale.order'].search([
+                ('name', '=', order_name)
+            ], limit=1)
+        if not self.sale_order_id:
+            raise UserError(_(
+                "No se ha encontrado la orden de venta asociada a la transacción."
+            ))
+
 
     # Esto devuelve el link de pago
     def _get_specific_rendering_values(self, processing_values):
@@ -33,8 +59,68 @@ class PaymentTransaction(models.Model):
             return res
 
         # Initiate the payment and retrieve the payment link data.
-        # payload = self._sipago_prepare_preference_request_payload()
-        payload = {
+        payload = self._sipago_prepare_preference_request_payload()
+        
+        _logger.info(
+            "Sending /api/v2/orders request for link creation:\n%s",
+            pprint.pformat(payload),
+        )
+        api_url = self.provider_id._sipago_make_request(
+            '/api/v2/orders', payload=payload
+        )["data"]["attributes"]["links"]["checkout"]
+
+        # Extract the payment link URL and embed it in the redirect form.
+        rendering_values = {
+            'api_url': api_url,
+        }
+        return rendering_values
+
+    # # Esto prepara el payload para la petición de pago el webhook
+    def _sipago_prepare_preference_request_payload(self):
+        """ Create the payload for the preference request based on the transaction values.
+
+    #     :return: The request payload.
+    #     :rtype: dict
+    #     """
+    #     base_url = self.provider_id.get_base_url()
+    #     return_url = urls.url_join(base_url, SipagoController._return_url)
+    #     sanitized_reference = url_quote(self.reference)
+    #     webhook_url = urls.url_join(
+    #         base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
+    #     )  # Append the reference to identify the transaction from the webhook notification data.
+
+    #     # In the case where we are issuing a preference request in CLP or COP, we must ensure that
+    #     # the price unit is an integer because these currencies do not have a minor unit.
+    #     unit_price = self.amount
+    #     if self.currency_id.name in ('CLP', 'COP'):
+    #         rounded_unit_price = int(self.amount)
+    #         if rounded_unit_price != self.amount:
+    #             raise UserError(_(
+    #                 "Prices in the currency %s must be expressed in integer values.",
+    #                 self.currency_id.name,
+    #             ))
+    #         unit_price = rounded_unit_price
+    
+        items = []
+        for line in self.sale_order_id:
+            _logger.info( "\n\n Item:\n\n")
+            _logger.info(
+                pprint.pformat(line)
+            )
+            # items.append({
+            #     'id': line.product_id.id,
+            #     'name': line.product_id.name,
+            #     'unitPrice': {
+            #         'currency': '032',
+            #         'amount': line.price_subtotal
+            #     },
+            #     'quantity': line.product_uom_qty
+            # })
+
+
+
+        # harcoded data
+        return {
             "data": {
                 "attributes": {
                     "redirect_urls": {
@@ -61,45 +147,6 @@ class PaymentTransaction(models.Model):
                 }
             }
         }
-        _logger.info(
-            "Sending /api/v2/orders request for link creation:\n%s",
-            pprint.pformat(payload),
-        )
-        api_url = self.provider_id._sipago_make_request(
-            '/api/v2/orders', payload=payload
-        )["data"]["attributes"]["links"]["checkout"]
-
-        # Extract the payment link URL and embed it in the redirect form.
-        rendering_values = {
-            'api_url': api_url,
-        }
-        return rendering_values
-
-    # # Esto prepara el payload para la petición de pago el webhook
-    # def _sipago_prepare_preference_request_payload(self):
-    #     """ Create the payload for the preference request based on the transaction values.
-
-    #     :return: The request payload.
-    #     :rtype: dict
-    #     """
-    #     base_url = self.provider_id.get_base_url()
-    #     return_url = urls.url_join(base_url, SipagoController._return_url)
-    #     sanitized_reference = url_quote(self.reference)
-    #     webhook_url = urls.url_join(
-    #         base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
-    #     )  # Append the reference to identify the transaction from the webhook notification data.
-
-    #     # In the case where we are issuing a preference request in CLP or COP, we must ensure that
-    #     # the price unit is an integer because these currencies do not have a minor unit.
-    #     unit_price = self.amount
-    #     if self.currency_id.name in ('CLP', 'COP'):
-    #         rounded_unit_price = int(self.amount)
-    #         if rounded_unit_price != self.amount:
-    #             raise UserError(_(
-    #                 "Prices in the currency %s must be expressed in integer values.",
-    #                 self.currency_id.name,
-    #             ))
-    #         unit_price = rounded_unit_price
 
     #     return {
     #         'auto_return': 'all',
