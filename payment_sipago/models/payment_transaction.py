@@ -25,6 +25,13 @@ class PaymentTransaction(models.Model):
         store=False,
     )
 
+    sale_order_lines = fields.One2many(
+        comodel_name='sale.order.line',
+        string='Sale Order Lines',
+        compute='_compute_sale_order_lines',
+        store=False,
+    )
+
     @api.depends('reference')
     def _compute_sale_order_id(self):
         """ Compute the sale order based on the reference of the transaction.
@@ -38,11 +45,25 @@ class PaymentTransaction(models.Model):
             tx.sale_order_id = self.env['sale.order'].search([
                 ('name', '=', order_name)
             ], limit=1)
+
         if not self.sale_order_id:
             raise UserError(_(
                 "No se ha encontrado la orden de venta asociada a la transacción."
             ))
 
+    @api.depends('sale_order_id')
+    def _compute_sale_order_lines(self):
+        """ Compute the sale order lines based on the sale order of the transaction.
+
+        Note: This method is not stored in the database.
+
+        :return: None
+        """
+        for tx in self:
+            if tx.sale_order_id:
+                tx.sale_order_lines = self.env['sale.order.line'].search([
+                    ('order_id', '=', tx.sale_order_id.id)
+                ])
 
     # Esto devuelve el link de pago
     def _get_specific_rendering_values(self, processing_values):
@@ -60,7 +81,7 @@ class PaymentTransaction(models.Model):
 
         # Initiate the payment and retrieve the payment link data.
         payload = self._sipago_prepare_preference_request_payload()
-        
+
         _logger.info(
             "Sending /api/v2/orders request for link creation:\n%s",
             pprint.pformat(payload),
@@ -79,9 +100,9 @@ class PaymentTransaction(models.Model):
     def _sipago_prepare_preference_request_payload(self):
         """ Create the payload for the preference request based on the transaction values.
 
-    #     :return: The request payload.
-    #     :rtype: dict
-    #     """
+        :return: The request payload.
+        :rtype: dict
+        """
     #     base_url = self.provider_id.get_base_url()
     #     return_url = urls.url_join(base_url, SipagoController._return_url)
     #     sanitized_reference = url_quote(self.reference)
@@ -100,50 +121,48 @@ class PaymentTransaction(models.Model):
     #                 self.currency_id.name,
     #             ))
     #         unit_price = rounded_unit_price
-    
+
         items = []
-        for line in self.sale_order_id:
-            _logger.info( "\n\n Item:\n\n")
-            _logger.info(
-                pprint.pformat(line)
-            )
-            # items.append({
-            #     'id': line.product_id.id,
-            #     'name': line.product_id.name,
-            #     'unitPrice': {
-            #         'currency': '032',
-            #         'amount': line.price_subtotal
-            #     },
-            #     'quantity': line.product_uom_qty
-            # })
+        for line in self.sale_order_lines:
+            items.append({
+                'id': line.product_id.id,
+                'name': line.name,
+                'unitPrice': {
+                    'currency': '032',
+                    'amount': int(line.price_unit*100)
+                },
+                'quantity': int(line.product_uom_qty)
+            })
 
+        # Add taxes to the order
+        items.append({
+            'id': '0',
+            'name': 'Impuestos',
+            'unitPrice': {
+                'currency': '032',
+                'amount': int(self.sale_order_id.amount_tax * 100)
+            },
+            'quantity': 1
+        })
 
-
-        # harcoded data
         return {
             "data": {
                 "attributes": {
+                    # harcoded data
                     "redirect_urls": {
                         "success": "https://dominio.com/?ref=ok",
                         "failed": "https://dominio.com/?ref=fallo"
                     },
                     "currency": "032",
+                    # harcoded data
                     "shipping": {
-                        "name": "Precio fijo",
+                        "name": "Envio",
                         "price": {
                             "currency": "032",
                             "amount": 2000
                         }
                     },
-                    "items": [{
-                        "id": 31,
-                        "name": "Silla Eames Base Madera",
-                        "unitPrice": {
-                            "currency": "032",
-                            "amount": 1000
-                        },
-                        "quantity": 1
-                    }]
+                    "items": items
                 }
             }
         }
