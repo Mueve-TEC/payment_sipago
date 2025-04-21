@@ -25,13 +25,6 @@ class PaymentTransaction(models.Model):
         store=False,
     )
 
-    sale_order_lines = fields.One2many(
-        comodel_name='sale.order.line',
-        string='Sale Order Lines',
-        compute='_compute_sale_order_lines',
-        store=False,
-    )
-
     @api.depends('reference')
     def _compute_sale_order_id(self):
         """ Compute the sale order based on the reference of the transaction.
@@ -51,21 +44,6 @@ class PaymentTransaction(models.Model):
                 "No se ha encontrado la orden de venta asociada a la transacción."
             ))
 
-    @api.depends('sale_order_id')
-    def _compute_sale_order_lines(self):
-        """ Compute the sale order lines based on the sale order of the transaction.
-
-        Note: This method is not stored in the database.
-
-        :return: None
-        """
-        for tx in self:
-            if tx.sale_order_id:
-                tx.sale_order_lines = self.env['sale.order.line'].search([
-                    ('order_id', '=', tx.sale_order_id.id)
-                ])
-
-    # Esto devuelve el link de pago
     def _get_specific_rendering_values(self, processing_values):
         """ Override of `payment` to return Sipago-specific rendering values.
 
@@ -96,54 +74,19 @@ class PaymentTransaction(models.Model):
         }
         return rendering_values
 
-    # # Esto prepara el payload para la petición de pago el webhook
     def _sipago_prepare_preference_request_payload(self):
         """ Create the payload for the preference request based on the transaction values.
 
         :return: The request payload.
         :rtype: dict
         """
+    # TODO: implement webhook
     #     base_url = self.provider_id.get_base_url()
     #     return_url = urls.url_join(base_url, SipagoController._return_url)
     #     sanitized_reference = url_quote(self.reference)
     #     webhook_url = urls.url_join(
     #         base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
     #     )  # Append the reference to identify the transaction from the webhook notification data.
-
-    #     # In the case where we are issuing a preference request in CLP or COP, we must ensure that
-    #     # the price unit is an integer because these currencies do not have a minor unit.
-    #     unit_price = self.amount
-    #     if self.currency_id.name in ('CLP', 'COP'):
-    #         rounded_unit_price = int(self.amount)
-    #         if rounded_unit_price != self.amount:
-    #             raise UserError(_(
-    #                 "Prices in the currency %s must be expressed in integer values.",
-    #                 self.currency_id.name,
-    #             ))
-    #         unit_price = rounded_unit_price
-
-        items = []
-        for line in self.sale_order_lines:
-            items.append({
-                'id': line.product_id.id,
-                'name': line.name,
-                'unitPrice': {
-                    'currency': '032',
-                    'amount': int(line.price_unit*100)
-                },
-                'quantity': int(line.product_uom_qty)
-            })
-
-        # Add taxes to the order
-        items.append({
-            'id': '0',
-            'name': 'Impuestos',
-            'unitPrice': {
-                'currency': '032',
-                'amount': int(self.sale_order_id.amount_tax * 100)
-            },
-            'quantity': 1
-        })
 
         return {
             "data": {
@@ -154,50 +97,18 @@ class PaymentTransaction(models.Model):
                         "failed": "https://dominio.com/?ref=fallo"
                     },
                     "currency": "032",
-                    # harcoded data
-                    "shipping": {
-                        "name": "Envio",
-                        "price": {
-                            "currency": "032",
-                            "amount": 2000
-                        }
-                    },
-                    "items": items
+                    "items": [{
+                        'id': '0',
+                        'name': 'Total a pagar',
+                        'unitPrice': {
+                            'currency': '032',
+                            'amount': int(self.sale_order_id.amount_total * 100)
+                        },
+                        'quantity': 1
+                    }]
                 }
             }
         }
-
-    #     return {
-    #         'auto_return': 'all',
-    #         'back_urls': {
-    #             'success': return_url,
-    #             'pending': return_url,
-    #             'failure': return_url,
-    #         },
-    #         'external_reference': self.reference,
-    #         'items': [{
-    #             'title': self.reference,
-    #             'quantity': 1,
-    #             'currency_id': self.currency_id.name,
-    #             'unit_price': unit_price,
-    #         }],
-    #         'notification_url': webhook_url,
-    #         'payer': {
-    #             'name': self.partner_name,
-    #             'email': self.partner_email,
-    #             'phone': {
-    #                 'number': self.partner_phone,
-    #             },
-    #             'address': {
-    #                 'zip_code': self.partner_zip,
-    #                 'street_name': self.partner_address,
-    #             },
-    #         },
-    #         'payment_methods': {
-    #             # Prevent MP from proposing several installments for a payment.
-    #             'installments': 1,
-    #         },
-    #     }
 
     # def _get_tx_from_notification_data(self, provider_code, notification_data):
     #     """ Override of `payment` to find the transaction based on Sipago data.
