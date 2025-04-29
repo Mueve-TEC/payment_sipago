@@ -15,20 +15,23 @@ class SipagoController(http.Controller):
     _return_url = '/payment/sipago/return'
     # _webhook_url = '/payment/sipago/webhook'
 
+    # TODO: finish return from checkout
     # @http.route(_return_url, type='http', methods=['GET'], auth='public')
     # def sipago_return_from_checkout(self, **data):
-    #     """ Process the notification data sent by Mercado Pago after redirection from checkout.
+    #     """ Process the notification data sent by Sipago after redirection from checkout.
 
     #     :param dict data: The notification data.
     #     """
     #     # Handle the notification data.
-    #     _logger.info("Handling redirection from Mercado Pago with data:\n%s", pprint.pformat(data))
+    #     _logger.info(
+    #         "Handling redirection from Sipago with data:\n%s", pprint.pformat(data))
     #     if data.get('payment_id') != 'null':
     #         request.env['payment.transaction'].sudo()._handle_notification_data(
     #             'sipago', data
     #         )
     #     else:  # The customer cancelled the payment by clicking on the return button.
-    #         pass  # Don't try to process this case because the payment id was not provided.
+    #         # Don't try to process this case because the payment id was not provided.
+    #         pass
 
     #     # Redirect the user to the status page.
     #     return request.redirect('/payment/status')
@@ -37,7 +40,7 @@ class SipagoController(http.Controller):
     #     f'{_webhook_url}/<reference>', type='http', auth='public', methods=['POST'], csrf=False
     # )
     # def sipago_webhook(self, reference, **_kwargs):
-    #     """ Process the notification data sent by Mercado Pago to the webhook.
+    #     """ Process the notification data sent by Sipago to the webhook.
 
     #     :param str reference: The transaction reference embedded in the webhook URL.
     #     :param dict _kwargs: The extra query parameters.
@@ -45,7 +48,7 @@ class SipagoController(http.Controller):
     #     :rtype: str
     #     """
     #     data = request.get_json_data()
-    #     _logger.info("Notification received from Mercado Pago with data:\n%s", pprint.pformat(data))
+    #     _logger.info("Notification received from Sipago with data:\n%s", pprint.pformat(data))
 
     #     # Mercado Pago sends two types of asynchronous notifications: webhook notifications and
     #     # IPNs which are very similar to webhook notifications but are sent later and contain less

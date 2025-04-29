@@ -34,13 +34,11 @@ class PaymentTransaction(models.Model):
         :return: None
         """
         for tx in self:
-            _logger.info(f"\nREFERENCE: {tx.reference} \n")
             order_name = tx.reference.split('-')[0]
 
             tx.sale_order = tx.env['sale.order'].search([
                 ('name', '=', order_name)
             ], limit=1)
-            _logger.info(f"\nORDER: {tx.sale_order} \n")
 
         if not self.sale_order:
             raise UserError(_(
@@ -83,10 +81,13 @@ class PaymentTransaction(models.Model):
         :return: The request payload.
         :rtype: dict
         """
-    # TODO: implement webhook
-    #     base_url = self.provider_id.get_base_url()
-    #     return_url = urls.url_join(base_url, SipagoController._return_url)
-    #     sanitized_reference = url_quote(self.reference)
+        # TODO: implement return URL
+        base_url = self.provider_id.get_base_url()
+        _logger.info(f"\nBASE URL: {base_url}\n")
+        return_url = urls.url_join(base_url, SipagoController._return_url)
+        sanitized_reference = url_quote(self.reference)
+        _logger.info(f"\nSANITIZED REFERENCE: {sanitized_reference}\n")
+        # TODO: implement webhook
     #     webhook_url = urls.url_join(
     #         base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
     #     )  # Append the reference to identify the transaction from the webhook notification data.
@@ -96,9 +97,11 @@ class PaymentTransaction(models.Model):
                 "attributes": {
                     # harcoded data
                     "redirect_urls": {
-                        "success": "https://dominio.com/?ref=ok",
-                        "failed": "https://dominio.com/?ref=fallo"
+                        "success": return_url,
+                        "failed": base_url
                     },
+                    # TODO: implement webhook
+                    # "webhookUrl": "https://www.midominio.com/?ref=soyunhook",
                     "currency": "032",
                     "items": [{
                         'id': '0',
@@ -113,6 +116,7 @@ class PaymentTransaction(models.Model):
             }
         }
 
+    # TODO: implement webhook
     # def _get_tx_from_notification_data(self, provider_code, notification_data):
     #     """ Override of `payment` to find the transaction based on Sipago data.
 
@@ -141,6 +145,7 @@ class PaymentTransaction(models.Model):
     #         )
     #     return tx
 
+    # TODO: implement webhook
     # def _process_notification_data(self, notification_data):
     #     """ Override of `payment` to process the transaction based on Sipago data.
 
@@ -194,6 +199,7 @@ class PaymentTransaction(models.Model):
     #             _("Received data with invalid status: %s", payment_status)
     #         )
 
+    # TODO: implement webhook
     # @api.model
     # def _sipago_get_error_msg(self, status_detail):
     #     """ Return the error message corresponding to the payment status.
