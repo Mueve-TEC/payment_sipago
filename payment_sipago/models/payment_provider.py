@@ -27,6 +27,9 @@ class Paymentprovider(models.Model):
         string="Sipago Environment",
         groups='base.group_system',
         required_if_provider='sipago',
+        default='DEVELOPMENT',
+        help="Development is used for testing purposes, while Production is used for live transactions."
+                " For develoment credentials, look at https://docs.sipago.coop/API%20Cobros/credencialDev"
     )
 
     sipago_client_id = fields.Char(

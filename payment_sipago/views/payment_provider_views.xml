@@ -22,7 +22,6 @@
                 <group string="Sipago Configuration" attrs="{'invisible': [('code', '!=', 'sipago')]}">
                     <field name="sipago_env"
                            string="Operation Mode"
-                           required="1"
                            attrs="{'required': [('code', '=', 'sipago'), ('state', '!=', 'disabled')]}"
                            options="{'no_create': True, 'no_open': True}"/>
                 </group>
