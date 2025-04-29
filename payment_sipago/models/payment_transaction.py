@@ -18,15 +18,15 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    sale_order_id = fields.Many2one(
+    sale_order = fields.Many2one(
         comodel_name='sale.order',
         string='Sale Order',
-        compute='_compute_sale_order_id',
+        compute='_compute_sale_order',
         store=False,
     )
 
     @api.depends('reference')
-    def _compute_sale_order_id(self):
+    def _compute_sale_order(self):
         """ Compute the sale order based on the reference of the transaction.
 
         Note: This method is not stored in the database.
@@ -34,12 +34,15 @@ class PaymentTransaction(models.Model):
         :return: None
         """
         for tx in self:
+            _logger.info(f"\nREFERENCE: {tx.reference} \n")
             order_name = tx.reference.split('-')[0]
-            tx.sale_order_id = self.env['sale.order'].search([
+
+            tx.sale_order = tx.env['sale.order'].search([
                 ('name', '=', order_name)
             ], limit=1)
+            _logger.info(f"\nORDER: {tx.sale_order} \n")
 
-        if not self.sale_order_id:
+        if not self.sale_order:
             raise UserError(_(
                 "No se ha encontrado la orden de venta asociada a la transacción."
             ))
@@ -102,7 +105,7 @@ class PaymentTransaction(models.Model):
                         'name': 'Total a pagar',
                         'unitPrice': {
                             'currency': '032',
-                            'amount': int(self.sale_order_id.amount_total * 100)
+                            'amount': int(self.sale_order.amount_total * 100)
                         },
                         'quantity': 1
                     }]
