@@ -36,14 +36,16 @@ class PaymentTransaction(models.Model):
         for tx in self:
             order_name = tx.reference.split('-')[0]
 
-            tx.sale_order = tx.env['sale.order'].search([
+            sale_order = tx.env['sale.order'].search([
                 ('name', '=', order_name)
             ], limit=1)
 
-        if not self.sale_order:
-            raise UserError(_(
-                "No se ha encontrado la orden de venta asociada a la transacción."
-            ))
+            tx.sale_order = sale_order or False
+
+            if not tx.sale_order:
+                raise UserError(_(
+                    "No se ha encontrado la orden de venta asociada a la transacción."
+                ))
 
     def _get_specific_rendering_values(self, processing_values):
         """ Override of `payment` to return Sipago-specific rendering values.
