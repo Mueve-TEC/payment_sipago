@@ -5,7 +5,7 @@ import requests
 from datetime import datetime
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL, SUPPORTED_CURRENCIES
+from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL
 from werkzeug import urls
 
 
@@ -56,7 +56,7 @@ class Paymentprovider(models.Model):
 
     # === BUSINESS METHODS === #
 
-    # TODO:
+    # TODO: currency verification
     # @api.model
     # def _get_compatible_providers(self, *args, currency_id=None, **kwargs):
     #     """ Override of `payment` to unlist Sipago providers for unsupported currencies. """

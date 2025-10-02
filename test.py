@@ -110,6 +110,17 @@ class SipagoTest:
                 ("Could not establish the connection to the API.")
             )
         return response.json()
+    
+    def sipago_check_status(self, payment_uuid):
+        """ Check the status of a payment by its UUID.
+
+        :param str payment_uuid: The UUID of the payment to check.
+        :return: The JSON-formatted content of the response.
+        :rtype: dict
+        :raise ValidationError: If an HTTP error occurs.
+        """
+        endpoint = f"/api/v2/orders/{payment_uuid}"
+        return self.sipago_make_request(endpoint, method='GET')
 
 
 def main():
@@ -125,6 +136,7 @@ def main():
                     "success": "https://dominio.com/?ref=ok",
                     "failed": "https://dominio.com/?ref=fallo"
                 },
+                "webhook_url": "https://dominio.com/api/sipago/webhook/ref",
                 "currency": "032",
                 "shipping": {
                     "name": "Precio fijo",
@@ -152,7 +164,17 @@ def main():
 
     print("\nResponse checkout link:",
           response["data"]["attributes"]["links"]["checkout"])
+    
 
+    payment_uuid = response["data"]["attributes"]["uuid"]
+    print("\nResponse payment uuid:",
+          payment_uuid)
+
+    print("Checking payment status by uuid with sipago server...")
+    # Check the status of the payment
+    status_response = sipago_test.sipago_check_status(payment_uuid)
+    print("\nResponse payment status:")
+    pprint.pprint(status_response["data"])
 
 if __name__ == "__main__":
     main()
