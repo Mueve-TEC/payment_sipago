@@ -1,11 +1,10 @@
 
 from odoo import _
 
-# TODO : Sipago payment availability by currency verification
-# # Currency codes supported by Sipago (ARS - Argentine Peso, code 032)
-# SUPPORTED_CURRENCIES = [
-#     'ARS',  # Argentine Peso - ISO code 032
-# ]
+# Currency codes supported by Sipago (ARS - Argentine Peso, code 032)
+SUPPORTED_CURRENCIES = [
+    'ARS',  # Argentine Peso - ISO code 032
+]
 
 # Mapping of transaction states to Sipago statuses (both order and payment statuses)
 # Format: internal_status -> [list_of_external_statuses]

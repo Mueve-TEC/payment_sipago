@@ -5,7 +5,8 @@ import requests
 from datetime import datetime
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL
+from odoo.addons.payment_sipago.const import AUTH_SERVER_URL, CHECKOUT_URL, SUPPORTED_CURRENCIES
+
 from werkzeug import urls
 
 
@@ -56,18 +57,17 @@ class Paymentprovider(models.Model):
 
     # === BUSINESS METHODS === #
 
-    # TODO: currency verification
-    # @api.model
-    # def _get_compatible_providers(self, *args, currency_id=None, **kwargs):
-    #     """ Override of `payment` to unlist Sipago providers for unsupported currencies. """
-    #     providers = super()._get_compatible_providers(
-    #         *args, currency_id=currency_id, **kwargs)
+    @api.model
+    def _get_compatible_providers(self, *args, currency_id=None, **kwargs):
+        """ Override of `payment` to unlist Sipago providers for unsupported currencies. """
+        providers = super()._get_compatible_providers(
+            *args, currency_id=currency_id, **kwargs)
 
-    #     currency = self.env['res.currency'].browse(currency_id).exists()
-    #     if currency and currency.name not in SUPPORTED_CURRENCIES:
-    #         providers = providers.filtered(lambda p: p.code != 'sipago')
+        currency = self.env['res.currency'].browse(currency_id).exists()
+        if currency and currency.name not in SUPPORTED_CURRENCIES:
+            providers = providers.filtered(lambda p: p.code != 'sipago')
 
-    #     return providers
+        return providers
 
     def sipago_set_JWT_token(self):
         """ Get the JWT token from Sipago API.
