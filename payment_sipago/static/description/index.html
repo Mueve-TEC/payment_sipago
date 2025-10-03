@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Provider: Sipago</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .badges img {
+            margin: 2px;
+        }
+
+        section {
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #34495e;
+        }
+
+        h4 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        ul,
+        ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .highlight {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .title-ref {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Payment Provider: Sipago</h1>
+        <div class="badges">
+            <a href="https://odoo-community.org/page/development-status">
+                <img src="https://img.shields.io/badge/maturity-Production%2FStable-green.png"
+                    alt="Production/Stable" />
+            </a>
+            <a href="http://www.gnu.org/licenses/agpl-3.0-standalone.html">
+                <img src="https://img.shields.io/badge/license-AGPL--3-blue.png" alt="License: AGPL-3" />
+            </a>
+            <a href="https://github.com/Mueve-TEC/payment_sipago">
+                <img src="https://img.shields.io/badge/github-payment__sipago-lightgray.png?logo=github" alt="Mueve" />
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section id="descripcion" style="font-size: 1.1em;">
+            <p>Un módulo de pago para Odoo que permite integrar el proveedor de pagos <strong>Sipago</strong> al módulo
+                de sitio web para tarjetas de débito y crédito.</p>
+
+            <div class="highlight">
+                <p>Este módulo proporciona integración completa con la API de Sipago, permitiendo procesar pagos de la
+                    tienda web de Odoo mediante tarjetas de débito y crédito.</p>
+                <p>El módulo maneja automáticamente la autenticación OAuth2, la creación de órdenes de pago, webhooks
+                    para notificaciones de estado y el procesamiento de transacciones.</p>
+            </div>
+        </section>
+
+        <section id="caracteristicas" style="font-size: 1.1em;">
+            <h2>Características</h2>
+            <ul class="feature-list">
+                <li>✅ <strong>Autenticación OAuth2</strong>: Manejo automático de tokens JWT con renovación automática
+                </li>
+                <li>✅ <strong>Webhooks</strong>: Procesamiento automático de notificaciones de estado</li>
+                <li>✅ <strong>URLs de retorno</strong>: Manejo de redirecciones de éxito y falla</li>
+                <li>✅ <strong>Ambientes</strong>: Soporte para desarrollo y producción</li>
+                <li>✅ <strong>Validación</strong>: Verificación de datos de transacciones</li>
+                <li>✅ <strong>Logs detallados</strong>: Para debugging y monitoreo</li>
+            </ul>
+        </section>
+
+        <section id="requisitos" style="font-size: 1.1em;">
+            <h2>Requisitos</h2>
+            <ul>
+                <li><strong>Odoo</strong>: Versión 16.0 o superior</li>
+                <li><strong>Dependencias</strong>: módulo <span class="title-ref">payment</span> de Odoo</li>
+            </ul>
+        </section>
+
+        <section id="instalacion" style="font-size: 1.1em;">
+            <h2>Instalación</h2>
+            <p>Para instalar este módulo, debe seguir los siguientes pasos:</p>
+            <ol>
+                <li>Clonar el repositorio:
+                    <div class="code-block">git clone &lt;url-del-repositorio&gt;<br>cd payment_sipago</div>
+                </li>
+                <li>Copiar el módulo a tu instalación de Odoo:
+                    <div class="code-block">cp -r payment_sipago /ruta/a/tu/odoo/addons/</div>
+                </li>
+                <li>Actualizar la lista de módulos en Odoo:
+                    <ul>
+                        <li>Ir a <strong>Aplicaciones</strong> → <strong>Actualizar lista de aplicaciones</strong></li>
+                        <li>Buscar "Payment Provider: Sipago"</li>
+                        <li>Haga clic en <strong>Instalar</strong></li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <section id="dependencias" style="font-size: 1.1em;">
+            <h2>Dependencias</h2>
+            <p>Este módulo depende de los siguientes módulos de Odoo:</p>
+            <ul>
+                <li><span class="title-ref">payment</span></li>
+            </ul>
+        </section>
+
+        <section id="configuracion" style="font-size: 1.1em;">
+            <h2>Configuración</h2>
+
+            <h4>Credenciales de Sipago</h4>
+            <p>Para obtener credenciales de desarrollo, consultar: <a
+                    href="https://docs.sipago.coop/API%20Cobros/credencialDev">https://docs.sipago.coop/API%20Cobros/credencialDev</a>
+            </p>
+
+            <h4>Configuración en Odoo</h4>
+            <ol>
+                <li>Ir a <strong>Ventas → Configuración → Proveedores de pago</strong></li>
+                <li>Seleccionar el proveedor <strong>Sipago</strong></li>
+                <li>Configurar los siguientes campos:</li>
+            </ol>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Estado</strong></td>
+                        <td>Activar el proveedor</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ambiente Sipago</strong></td>
+                        <td>Development/Production</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client ID</strong></td>
+                        <td>Credencial Client ID de Sipago</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client Secret</strong></td>
+                        <td>Credencial Client Secret de Sipago</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="uso" style="font-size: 1.1em;">
+            <h2>Uso</h2>
+            <p>Una vez configurado el proveedor de pago Sipago:</p>
+            <ol>
+                <li>Los clientes podrán seleccionar Sipago como método de pago en el checkout del sitio web</li>
+                <li>Serán redirigidos a la plataforma de Sipago para completar el pago</li>
+                <li>Las transacciones se actualizarán automáticamente mediante webhooks</li>
+                <li>Los pagos exitosos confirmarán automáticamente los pedidos</li>
+            </ol>
+        </section>
+
+        <section id="soporte" style="font-size: 1.1em;">
+            <h2>Soporte</h2>
+            <ul>
+                <li><strong>Documentación Sipago</strong>: <a
+                        href="https://docs.sipago.coop/">https://docs.sipago.coop/</a></li>
+            </ul>
+        </section>
+
+        <section id="creditos" style="font-size: 1.1em;">
+            <h2>Créditos</h2>
+            <h3>Autor</h3>
+            <p>Este módulo fue desarrollado por:</p>
+            <ul>
+                <li><strong>Fundación Mueve</strong> (<a href="https://www.mueve.org.ar/">https://www.mueve.org.ar/</a>)
+                </li>
+            </ul>
+            <h3>Mantenedores</h3>
+            <p>Este módulo es mantenido por:</p>
+            <ul>
+                <li><strong>Fundación Mueve</strong> (<a href="https://www.mueve.org.ar/">https://www.mueve.org.ar/</a>)
+                </li>
+            </ul>
+            <h3>Programa</h3>
+            <p>Este módulo fue desarrollado en el marco del programa <strong>SOL3</strong> y de una <strong>beca de
+                    extensión de la Universidad Nacional de Córdoba</strong>.</p>
+        </section>
+    </main>
+</body>
+
+</html>

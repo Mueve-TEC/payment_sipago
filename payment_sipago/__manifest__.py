@@ -1,10 +1,12 @@
 
 {
     'name': "Payment Provider: Sipago",
-    'version': '1.0',
+    'version': '16.0.1.0.0',
     'category': 'Accounting/Payment Providers',
     'sequence': 350,
-    'summary': "A checkout payment provider for QR, debit and credit cards.",
+    'summary': "A checkout payment provider for debit and credit cards.",
+    'author': "Mueve",
+    'website': "https://github.com/Mueve-TEC",
     'description': " ",  # Non-empty string to avoid loading the README file.
     'depends': ['payment'],
     'data': [
@@ -16,5 +18,5 @@
     'application': False,
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
 }
