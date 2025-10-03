@@ -63,6 +63,12 @@ class PaymentTransaction(models.Model):
         :rtype: dict
         """
         base_url = self.provider_id.get_base_url()
+        
+        # Forzar HTTPS si viene HTTP
+        if base_url.startswith('http://'):
+            base_url = base_url.replace('http://', 'https://', 1)
+            _logger.warning("Base URL was HTTP, forcing HTTPS: %s", base_url)
+
         sanitized_reference = url_quote(self.reference)
         webhook_url = urls.url_join(
             base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
