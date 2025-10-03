@@ -18,35 +18,6 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    sale_order = fields.Many2one(
-        comodel_name='sale.order',
-        string='Sale Order',
-        compute='_compute_sale_order',
-        store=False,
-    )
-
-    @api.depends('reference')
-    def _compute_sale_order(self):
-        """ Compute the sale order based on the reference of the transaction.
-
-        Note: This method is not stored in the database.
-
-        :return: None
-        """
-        for tx in self:
-            order_name = tx.reference.split('-')[0]
-
-            sale_order = tx.env['sale.order'].search([
-                ('name', '=', order_name)
-            ], limit=1)
-
-            tx.sale_order = sale_order.id if sale_order else False
-
-            if not tx.sale_order:
-                raise UserError(_(
-                    "No se ha encontrado la orden de venta asociada a la transacción."
-                ))
-
     def _get_specific_rendering_values(self, processing_values):
         """ Override of `payment` to return Sipago-specific rendering values.
 
@@ -97,10 +68,10 @@ class PaymentTransaction(models.Model):
             base_url, f'{SipagoController._webhook_url}/{sanitized_reference}'
         )  # Append the reference to identify the transaction from the webhook notification data.        
         
-        # TODO : tal vez hacer algo con el status
         success_url = urls.url_join(base_url, f'{SipagoController._return_url}?ref={sanitized_reference}&status=APPROVED')
         failed_url = urls.url_join(base_url, f'{SipagoController._return_url}?ref={sanitized_reference}&status=DENIED')
         
+        amount = int(self.amount * 100)
 
         return {
             "data": {
@@ -116,7 +87,7 @@ class PaymentTransaction(models.Model):
                         'name': 'Total a pagar',
                         'unitPrice': {
                             'currency': '032',
-                            'amount': int(self.sale_order.amount_total * 100)
+                            'amount': amount
                         },
                         'quantity': 1
                     }]
