@@ -40,7 +40,7 @@ class PaymentTransaction(models.Model):
                 ('name', '=', order_name)
             ], limit=1)
 
-            tx.sale_order = sale_order or False
+            tx.sale_order = sale_order.id if sale_order else False
 
             if not tx.sale_order:
                 raise UserError(_(
