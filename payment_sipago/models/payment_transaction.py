@@ -273,8 +273,12 @@ class PaymentTransaction(models.Model):
             self._set_pending()
             
         elif order_status in ORDER_STATUS_MAPPING['done'] and payment_status == 'APPROVED':
-            self._set_done()
-            
+            if self.state != 'done':
+                self._set_done()
+            else:
+                _logger.info(
+                    "Transaction %s is already done, no state change needed.", reference
+                )
         elif order_status in ORDER_STATUS_MAPPING['canceled']:
             self._set_canceled()
             
