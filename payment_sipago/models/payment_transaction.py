@@ -8,7 +8,7 @@ from werkzeug import urls
 from odoo import _, api, models, fields
 from odoo.exceptions import UserError, ValidationError
 
-from odoo.addons.payment_sipago.const import TRANSACTION_STATUS_MAPPING, ERROR_MESSAGE_MAPPING
+from odoo.addons.payment_sipago.const import ORDER_STATUS_MAPPING, ERROR_MESSAGE_MAPPING
 from odoo.addons.payment_sipago.controllers.main import SipagoController
 
 
@@ -147,54 +147,155 @@ class PaymentTransaction(models.Model):
             raise ValidationError(
                 "Sipago: " + _("Processing notification data with missing payment reference."))
         
-        # if the source is 'return_url', use the existing provider_reference
-        # otherwise, use the order_uuid from the notification data
-        if notification_data.get('source') == 'return_url':
+        # Determine the UUID based on the notification source
+        uuid = self._sipago_get_order_uuid(notification_data, reference)
+        
+        # Verify the notification data
+        verified_order_data = self._sipago_fetch_order_data(uuid, reference)
+        
+        # Extract and validate order status
+        order_status = verified_order_data.get('status')
+        if not order_status:
+            raise ValidationError(
+                "Sipago: " + _("Received data with missing order status for transaction %s.", reference))
+        
+        # Extract and validate payment status
+        payment_status, payment_error = self._sipago_extract_payment_info(
+            verified_order_data, reference
+        )
+        
+        # Process transaction based on status
+        self._sipago_handle_transaction_status(
+            order_status, payment_status, payment_error, reference, uuid
+        )
+
+    def _sipago_get_order_uuid(self, notification_data, reference):
+        """ Extract the order UUID from notification data.
+        
+        :param dict notification_data: The notification data sent by the provider.
+        :param str reference: The transaction reference.
+        :return: The order UUID.
+        :rtype: str
+        :raise ValidationError: If UUID cannot be determined.
+        """
+        source = notification_data.get('source')
+        
+        if source == 'return_url':
             url_status = notification_data.get('payment_status')
-            _logger.info("Processing Sipago return URL data for transaction %s with status %s", reference, url_status)
+            _logger.info(
+                "Processing Sipago return URL data for transaction %s with status %s",
+                reference, url_status
+            )
             uuid = self.provider_reference
-        elif notification_data.get('source'):
+        elif source:
             uuid = notification_data.get('order_uuid')
         else:
             raise ValidationError(
                 "Sipago: " + _("Could not determine the sipago payment uuid for transaction %s.", reference))
         
+        if not uuid:
+            raise ValidationError(
+                "Sipago: " + _("Missing order UUID for transaction %s.", reference))
+        
+        return uuid
 
-        # Verify the notification data.
-        verified_payment_data = self.provider_id._sipago_make_request(
+    def _sipago_fetch_order_data(self, uuid, reference):
+        """ Fetch and verify order data from Sipago API.
+        
+        :param str uuid: The order UUID.
+        :param str reference: The transaction reference.
+        :return: The verified order data.
+        :rtype: dict
+        """
+        verified_order_data = self.provider_id._sipago_make_request(
             f'/api/v2/orders/{uuid}', method='GET'
         )["data"]["attributes"]
 
-        payment_status = verified_payment_data.get('status')
+        _logger.info(
+            "Verified Sipago payment data for transaction %s:\n%s",
+            reference, pprint.pformat(verified_order_data)
+        )
+        
+        return verified_order_data
+
+    def _sipago_extract_payment_info(self, verified_order_data, reference):
+        """ Extract payment status and error information from order data.
+        
+        :param dict verified_order_data: The verified order data from Sipago.
+        :param str reference: The transaction reference.
+        :return: Tuple of (payment_status, payment_error)
+        :rtype: tuple
+        :raise ValidationError: If payment status is missing.
+        """
+        payment_data = verified_order_data.get('payment', {})
+        payment_error = None
+        
+        if payment_data:
+            payment_status = payment_data.get('status')
+        else:
+            # Check for failed payments in the payments array
+            failed_payments = verified_order_data.get('payments', [])
+            if failed_payments: 
+                _logger.warning(
+                    "No payment data found for transaction %s, but found failed payments: %s",
+                    reference, pprint.pformat(failed_payments)
+                )
+                last_payment = failed_payments[-1]
+                payment_status = last_payment.get('status')
+                payment_error = last_payment.get('error', {})
+            else:
+                payment_status = None
+        
         if not payment_status:
             raise ValidationError(
-                "Sipago: " + _("Received data with missing status."))
+                "Sipago: " + _("Received data with missing payment status for transaction %s.", reference))
+        
+        return payment_status, payment_error
 
-        if payment_status in TRANSACTION_STATUS_MAPPING['pending']:
+    def _sipago_handle_transaction_status(self, order_status, payment_status, payment_error, reference, uuid):
+        """ Handle transaction state based on order and payment status.
+        
+        :param str order_status: The order status from Sipago.
+        :param str payment_status: The payment status.
+        :param dict payment_error: Payment error information (if any).
+        :param str reference: The transaction reference.
+        :param str uuid: The order UUID.
+        :return: None
+        """
+        if order_status in ORDER_STATUS_MAPPING['pending']:
+            if payment_status == 'DENIED' and payment_error:
+                _logger.info(
+                    "Payment was denied for transaction %s: %s - %s",
+                    reference,
+                    payment_error.get('description'),
+                    payment_error.get('message')
+                )
             self._set_pending()
-        elif payment_status in TRANSACTION_STATUS_MAPPING['done']:
+            
+        elif order_status in ORDER_STATUS_MAPPING['done'] and payment_status == 'APPROVED':
             self._set_done()
-        elif payment_status in TRANSACTION_STATUS_MAPPING['canceled']:
+            
+        elif order_status in ORDER_STATUS_MAPPING['canceled']:
             self._set_canceled()
-        elif payment_status in TRANSACTION_STATUS_MAPPING['error']:
+            
+        elif order_status in ORDER_STATUS_MAPPING['error']:
             _logger.warning(
                 "Received data for transaction with reference %s and status %s and sipago uuid %s",
-                reference, payment_status, uuid
+                reference, order_status, uuid
             )
-            error_message = self._sipago_get_error_msg(payment_status)
+            error_message = self._sipago_get_error_msg(order_status)
             self._set_error(
-                "Sipago: " + _("Received data with error status: %s. %s", payment_status, error_message)
+                "Sipago: " + _("Received data with error status: %s. %s", order_status, error_message)
             )
-        else:  # Classify unsupported payment status as the `error` tx state.
+            
+        else:  # Classify unsupported order status as the `error` tx state
             _logger.warning(
-                "Received data for transaction with reference %s with invalid payment status: %s.",
-                reference, payment_status
+                "Received data for transaction with reference %s with invalid order status: %s.",
+                reference, order_status
             )
             self._set_error(
-                "Sipago: " +
-                _("Received data with invalid status: %s", payment_status)
+                "Sipago: " + _("Received data with invalid status: %s", order_status)
             )
-
 
     @api.model
     def _sipago_get_error_msg(self, status_detail):

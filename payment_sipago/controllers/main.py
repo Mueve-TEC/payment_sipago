@@ -21,8 +21,6 @@ class SipagoController(http.Controller):
 
         :param dict data: The notification data from Sipago redirect URLs.
         """
-        # Log headers for debugging purposes.
-        _logger.info("Headers:\n%s", pprint.pformat(dict(request.httprequest.headers)))
 
         # Handle the notification data.
         _logger.info(
@@ -61,8 +59,6 @@ class SipagoController(http.Controller):
         :return: An empty string to acknowledge the notification.
         :rtype: str
         """
-        # Log headers for debugging purposes.
-        _logger.info("Headers:\n%s", pprint.pformat(dict(request.httprequest.headers)))
         data = request.get_json_data()
         _logger.info("Webhook notification received from Sipago with data:\n%s", pprint.pformat(data))
 

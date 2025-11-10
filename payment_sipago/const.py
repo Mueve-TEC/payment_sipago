@@ -8,13 +8,12 @@ SUPPORTED_CURRENCIES = [
 
 # Mapping of transaction states to Sipago statuses (both order and payment statuses)
 # Format: internal_status -> [list_of_external_statuses]
-TRANSACTION_STATUS_MAPPING = {
+ORDER_STATUS_MAPPING = {
     "pending": ["PENDING"],
     "done": ["SUCCESS"],
     "canceled": [ "EXPIRED"],
     "error": ["FAILED","FAILED_CHECKOUT"],
 }
-
 
 # Error messages for Sipago states based on official documentation
 ERROR_MESSAGE_MAPPING = {
