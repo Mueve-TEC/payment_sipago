@@ -1,7 +1,7 @@
 
 {
     'name': "Payment Provider: Sipago",
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'category': 'Accounting/Payment Providers',
     'sequence': 350,
     'summary': "A checkout payment provider for debit and credit cards.",
