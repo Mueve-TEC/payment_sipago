@@ -153,25 +153,25 @@ class Paymentprovider(models.Model):
             else:
                 response = requests.post(
                     url, json=payload, headers=headers, timeout=10)
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError:
+                _logger.exception(
+                    "Invalid API request at %s with data:\n%s", url, pprint.pformat(
+                        payload),
+                )
                 try:
-                    response.raise_for_status()
-                except requests.exceptions.HTTPError:
-                    _logger.exception(
-                        "Invalid API request at %s with data:\n%s", url, pprint.pformat(
-                            payload),
-                    )
-                    try:
-                        response_content = response.json()
-                        raise ValidationError("Sipago: " + _(
-                            "The communication with the API failed. Sipago gave us the"
-                            " following response:\n '%s", pprint.pformat(
-                                response_content)
-                        ))
-                    except ValueError:  # The response can be empty when the access token is wrong.
-                        raise ValidationError("Sipago: " + _(
-                            "The communication with the API failed. The response is empty. Please"
-                            " verify your access token."
-                        ))
+                    response_content = response.json()
+                    raise ValidationError("Sipago: " + _(
+                        "The communication with the API failed. Sipago gave us the"
+                        " following response:\n '%s'", pprint.pformat(
+                            response_content)
+                    ))
+                except ValueError:  # The response can be empty when the access token is wrong.
+                    raise ValidationError("Sipago: " + _(
+                        "The communication with the API failed. The response is empty. Please"
+                        " verify your access token."
+                    ))
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             _logger.exception("Unable to reach endpoint at %s", url)
             raise ValidationError(
