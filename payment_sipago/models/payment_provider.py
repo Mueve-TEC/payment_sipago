@@ -12,7 +12,7 @@ from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
-class Paymentprovider(models.Model):
+class PaymentProvider(models.Model):
     _inherit = 'payment.provider'
 
     code = fields.Selection(selection_add=[('sipago', 'Sipago')], ondelete={'sipago': 'set default'})
@@ -27,7 +27,7 @@ class Paymentprovider(models.Model):
         required_if_provider='sipago',
         default='DEVELOPMENT',
         help='Development is used for testing purposes, while Production is used for live transactions.'
-        ' For develoment credentials, look at https://docs.sipago.coop/API%20Cobros/credencialDev',
+        ' For development credentials, look at https://docs.sipago.coop/API%20Cobros/credencialDev',
     )
 
     sipago_client_id = fields.Char(

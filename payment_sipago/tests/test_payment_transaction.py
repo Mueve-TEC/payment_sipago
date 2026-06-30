@@ -83,7 +83,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         successful payment (order SUCCESS + payment APPROVED)."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
             tx._process_notification_data(self.redirect_notification_data)
@@ -95,7 +95,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         a pending order."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_pending,
         ):
             tx._process_notification_data(self.redirect_notification_data)
@@ -107,7 +107,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         an expired order."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_expired,
         ):
             tx._process_notification_data(self.redirect_notification_data)
@@ -119,7 +119,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         a failed order."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_failed,
         ):
             tx._process_notification_data(self.redirect_notification_data)
@@ -129,13 +129,13 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         """Test that processing a second success notification does not change the state."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
             tx._process_notification_data(self.redirect_notification_data)
         self.assertEqual(tx.state, 'done')
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request',
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
             tx._process_notification_data(self.redirect_notification_data)
@@ -152,7 +152,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'source': 'api_checkout',
         }
         with patch(
-            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider._sipago_make_request'
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request'
         ) as mock_request:
             with self.assertRaises(ValidationError):
                 tx._process_notification_data(webhook_data)
