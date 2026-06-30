@@ -3,6 +3,16 @@
     <record id="payment_provider_sipago" model="payment.provider">
         <field name="name">Sipago</field>
         <field name="code">sipago</field>
+        <field name="display_as">Credit Card (powered by Sipago)</field>
+        <field name="image_128" type="base64" file="payment_sipago/static/description/sipago_icon.png" />
+        <field name="module_id" ref="base.module_payment_sipago" />
+        <field
+            name="payment_icon_ids"
+            eval="[(6, 0, [
+                ref('payment.payment_icon_cc_visa'),
+                ref('payment.payment_icon_cc_mastercard'),
+            ])]"
+        />
         <field name="redirect_form_view_id" ref="redirect_form" />
     </record>
 </odoo>
