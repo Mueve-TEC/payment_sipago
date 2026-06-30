@@ -5,6 +5,7 @@ from werkzeug import urls
 
 from odoo.tests import tagged
 from odoo.tools import mute_logger
+from odoo.exceptions import ValidationError
 
 from odoo.addons.payment.tests.http_common import PaymentHttpCommon
 from odoo.addons.payment_sipago.controllers.main import SipagoController
@@ -72,7 +73,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             processing_values = tx._get_processing_values()
         form_info = self._extract_values_from_html_form(processing_values['redirect_form_html'])
         self.assertEqual(form_info['action'], 'https://dummy.com')
-        self.assertEqual(form_info['method'], 'post')
+        self.assertEqual(form_info['method'], 'get')
         self.assertDictEqual(form_info['inputs'], {})
 
     def test_processing_notification_data_confirms_transaction(self):
@@ -137,3 +138,21 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         ):
             tx._process_notification_data(self.redirect_notification_data)
         self.assertEqual(tx.state, 'done')
+
+    @mute_logger('odoo.addons.payment_sipago.models.payment_transaction')
+    def test_webhook_with_mismatched_uuid_raises_and_skips_api_call(self):
+        """ Test that a webhook with a mismatched order UUID raises ValidationError and does not
+        make an API call (spam prevention). """
+        tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
+        webhook_data = {
+            'reference': tx.reference,
+            'order_uuid': 'fake-uuid-not-matching',
+            'source': 'api_checkout',
+        }
+        with patch(
+            'odoo.addons.payment_sipago.models.payment_provider.Paymentprovider'
+            '._sipago_make_request'
+        ) as mock_request:
+            with self.assertRaises(ValidationError):
+                tx._process_notification_data(webhook_data)
+            mock_request.assert_not_called()

@@ -189,6 +189,15 @@ class PaymentTransaction(models.Model):
             uuid = self.provider_reference
         elif source:
             uuid = notification_data.get('order_uuid')
+            if uuid != self.provider_reference:
+                _logger.warning(
+                    "Webhook UUID mismatch for transaction %s: got %s, expected %s. Ignoring.",
+                    reference, uuid, self.provider_reference
+                )
+                raise ValidationError(
+                    "Sipago: " + _(
+                        "Received notification with mismatched order UUID for transaction %s.",
+                        reference))
         else:
             raise ValidationError(
                 "Sipago: " + _("Could not determine the sipago payment uuid for transaction %s.", reference))
