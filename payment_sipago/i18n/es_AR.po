@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0-20250909\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 16:59+0000\n"
-"PO-Revision-Date: 2026-06-30 16:59+0000\n"
+"POT-Creation-Date: 2026-06-30 19:49+0000\n"
+"PO-Revision-Date: 2026-06-30 19:49+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,12 +18,12 @@ msgstr ""
 #. module: payment_sipago
 #: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
 msgid "Client ID"
-msgstr "Client ID"
+msgstr ""
 
 #. module: payment_sipago
 #: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
 msgid "Client Secret"
-msgstr "Client Secret"
+msgstr ""
 
 #. module: payment_sipago
 #: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__code
@@ -36,7 +36,8 @@ msgstr "Código"
 #: code:addons/payment_sipago/models/payment_transaction.py:0
 #, python-format
 msgid "Could not determine the sipago payment uuid for transaction %s."
-msgstr "No se pudo determinar el uuid de pago de Sipago para la transacción %s."
+msgstr ""
+"No se pudo determinar el uuid de pago de Sipago para la transacción %s."
 
 #. module: payment_sipago
 #. odoo-python
@@ -45,6 +46,11 @@ msgstr "No se pudo determinar el uuid de pago de Sipago para la transacción %s.
 #, python-format
 msgid "Could not establish the connection to the API."
 msgstr "No se pudo establecer la conexión con la API."
+
+#. module: payment_sipago
+#: model:payment.provider,display_as:payment_sipago.payment_provider_sipago
+msgid "Credit Card (powered by Sipago)"
+msgstr "Tarjeta de crédito/débito"
 
 #. module: payment_sipago
 #: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__sipago_env__development
@@ -58,9 +64,9 @@ msgid ""
 "transactions. For development credentials, look at "
 "https://docs.sipago.coop/API%20Cobros/credencialDev"
 msgstr ""
-"Desarrollo se utiliza con propósito de prueba, mientras que Producción se utiliza "
-"para transacciones reales. Para credenciales de desarrollo acceder al siguiente link: "
-"https://docs.sipago.coop/API%20Cobros/credencialDev"
+"Desarrollo se utiliza con propósito de prueba, mientras que Producción se "
+"utiliza para transacciones reales. Para credenciales de desarrollo acceder "
+"al siguiente link: https://docs.sipago.coop/API%20Cobros/credencialDev"
 
 #. module: payment_sipago
 #. odoo-python
@@ -165,13 +171,15 @@ msgstr "Se recibieron datos sin referencia."
 #: code:addons/payment_sipago/models/payment_transaction.py:0
 #, python-format
 msgid "Received notification with mismatched order UUID for transaction %s."
-msgstr "Se recibió una notificación con UUID de orden no coincidente para la transacción %s."
+msgstr ""
+"Se recibió una notificación con UUID de orden no coincidente para la "
+"transacción %s."
 
 #. module: payment_sipago
 #: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__code__sipago
 #: model:payment.provider,name:payment_sipago.payment_provider_sipago
 msgid "Sipago"
-msgstr "Sipago"
+msgstr ""
 
 #. module: payment_sipago
 #: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_access_token
@@ -222,19 +230,18 @@ msgstr "Sipago: Formato de respuesta inválido al obtener el token JWT."
 #. module: payment_sipago
 #: model_terms:payment.provider,auth_msg:payment_sipago.payment_provider_sipago
 msgid "Su pago ha sido autorizado."
-msgstr "Su pago ha sido autorizado."
+msgstr ""
 
 #. module: payment_sipago
 #: model_terms:payment.provider,cancel_msg:payment_sipago.payment_provider_sipago
 msgid "Su pago ha sido cancelado."
-msgstr "Su pago ha sido cancelado."
+msgstr ""
 
 #. module: payment_sipago
 #: model_terms:payment.provider,pending_msg:payment_sipago.payment_provider_sipago
 msgid ""
 "Su pago ha sido procesado con éxito pero está en espera de su aprobación."
 msgstr ""
-"Su pago ha sido procesado con éxito pero está en espera de su aprobación."
 
 #. module: payment_sipago
 #. odoo-python
@@ -281,4 +288,4 @@ msgstr "Hubo un error en el proceso de checkout luego del pago del usuario"
 #. module: payment_sipago
 #: model_terms:payment.provider,done_msg:payment_sipago.payment_provider_sipago
 msgid "Tu pago se ha procesado con éxito. ¡Gracias!"
-msgstr "Tu pago se ha procesado con éxito. ¡Gracias!"
+msgstr ""
