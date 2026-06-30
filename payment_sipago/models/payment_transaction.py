@@ -77,7 +77,7 @@ class PaymentTransaction(models.Model):
         success_url = urls.url_join(base_url, f'{SipagoController._return_url}?ref={sanitized_reference}&status=APPROVED')
         failed_url = urls.url_join(base_url, f'{SipagoController._return_url}?ref={sanitized_reference}&status=DENIED')
         
-        amount = int(self.amount * 100)
+        amount = round(self.amount * 100)
 
         return {
             "data": {
