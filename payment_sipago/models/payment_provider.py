@@ -105,7 +105,7 @@ class Paymentprovider(models.Model):
                 token_data.get('expires_in')
             )
 
-        except ValueError:
+        except (ValueError, TypeError):
             raise ValidationError(
                 _("Sipago: Invalid response format while retrieving JWT token."))
 
