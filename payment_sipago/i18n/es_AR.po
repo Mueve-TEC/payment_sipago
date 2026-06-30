@@ -1,0 +1,284 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* payment_sipago
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0-20250909\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-30 16:59+0000\n"
+"PO-Revision-Date: 2026-06-30 16:59+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: payment_sipago
+#: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
+msgid "Client ID"
+msgstr "Client ID"
+
+#. module: payment_sipago
+#: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
+msgid "Client Secret"
+msgstr "Client Secret"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__code
+msgid "Code"
+msgstr "Código"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Could not determine the sipago payment uuid for transaction %s."
+msgstr "No se pudo determinar el uuid de pago de Sipago para la transacción %s."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid "Could not establish the connection to the API."
+msgstr "No se pudo establecer la conexión con la API."
+
+#. module: payment_sipago
+#: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__sipago_env__development
+msgid "Development"
+msgstr "Desarrollo"
+
+#. module: payment_sipago
+#: model:ir.model.fields,help:payment_sipago.field_payment_provider__sipago_env
+msgid ""
+"Development is used for testing purposes, while Production is used for live "
+"transactions. For development credentials, look at "
+"https://docs.sipago.coop/API%20Cobros/credencialDev"
+msgstr ""
+"Desarrollo se utiliza con propósito de prueba, mientras que Producción se utiliza "
+"para transacciones reales. Para credenciales de desarrollo acceder al siguiente link: "
+"https://docs.sipago.coop/API%20Cobros/credencialDev"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Missing order UUID for transaction %s."
+msgstr "No se encuentra el UUID del pedido para la transacción %s."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "No transaction found matching reference %s."
+msgstr "No se encontró una transacción que coincida con la referencia %s."
+
+#. module: payment_sipago
+#: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
+msgid "Operation Mode"
+msgstr "Modo de operación"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/const.py:0 code:addons/payment_sipago/const.py:0
+#, python-format
+msgid "Order creation failed before user payment"
+msgstr "La creación del pedido falló previamente al pago del usuario."
+
+#. module: payment_sipago
+#: model:ir.model,name:payment_sipago.model_payment_provider
+msgid "Payment Provider"
+msgstr "Proveedor de pago"
+
+#. module: payment_sipago
+#: model:ir.model,name:payment_sipago.model_payment_transaction
+msgid "Payment Transaction"
+msgstr "Transacción de pago"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/const.py:0 code:addons/payment_sipago/const.py:0
+#, python-format
+msgid "Payment was rejected for unknown reasons"
+msgstr "El pago fue rechazado por razones desconocidas."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Processing notification data with missing payment reference."
+msgstr "Procesando notificación sin referencia de pago."
+
+#. module: payment_sipago
+#: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__sipago_env__production
+msgid "Production"
+msgstr "Producción"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received data with error status: %s. %s"
+msgstr "Se recibieron datos con estado de error: %s. %s"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received data with invalid status: %s"
+msgstr "Se recibieron datos con un estado inválido: %s"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received data with missing order status for transaction %s."
+msgstr "Se recibieron datos sin estado de orden para la transacción %s."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received data with missing payment status for transaction %s."
+msgstr "Se recibieron datos sin estado de pago para la transacción %s."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received data with missing reference."
+msgstr "Se recibieron datos sin referencia."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Received notification with mismatched order UUID for transaction %s."
+msgstr "Se recibió una notificación con UUID de orden no coincidente para la transacción %s."
+
+#. module: payment_sipago
+#: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__code__sipago
+#: model:payment.provider,name:payment_sipago.payment_provider_sipago
+msgid "Sipago"
+msgstr "Sipago"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_access_token
+msgid "Sipago Access Token"
+msgstr "Token de acceso de Sipago"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_client_id
+msgid "Sipago Client ID"
+msgstr "Client ID de Sipago"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_client_secret
+msgid "Sipago Client Secret"
+msgstr "Client Secret de Sipago"
+
+#. module: payment_sipago
+#: model_terms:ir.ui.view,arch_db:payment_sipago.payment_provider_form
+msgid "Sipago Configuration"
+msgstr "Configuración de Sipago"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_env
+msgid "Sipago Environment"
+msgstr "Ambiente de Sipago"
+
+#. module: payment_sipago
+#: model:ir.model.fields,field_description:payment_sipago.field_payment_provider__sipago_access_token_expiration
+msgid "Sipago Token Expiration"
+msgstr "Expiración del token de Sipago"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid "Sipago: Failed to retrieve JWT token. Please check your credentials."
+msgstr "Sipago: No se pudo obtener el token JWT. Verifique sus credenciales."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid "Sipago: Invalid response format while retrieving JWT token."
+msgstr "Sipago: Formato de respuesta inválido al obtener el token JWT."
+
+#. module: payment_sipago
+#: model_terms:payment.provider,auth_msg:payment_sipago.payment_provider_sipago
+msgid "Su pago ha sido autorizado."
+msgstr "Su pago ha sido autorizado."
+
+#. module: payment_sipago
+#: model_terms:payment.provider,cancel_msg:payment_sipago.payment_provider_sipago
+msgid "Su pago ha sido cancelado."
+msgstr "Su pago ha sido cancelado."
+
+#. module: payment_sipago
+#: model_terms:payment.provider,pending_msg:payment_sipago.payment_provider_sipago
+msgid ""
+"Su pago ha sido procesado con éxito pero está en espera de su aprobación."
+msgstr ""
+"Su pago ha sido procesado con éxito pero está en espera de su aprobación."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid ""
+"The communication with the API failed. Sipago gave us the following response:\n"
+" '%s'"
+msgstr ""
+"La comunicación con la API falló. Sipago devolvió la siguiente respuesta:\n"
+" '%s'"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid ""
+"The communication with the API failed. The response is empty. Please verify "
+"your access token."
+msgstr ""
+"La comunicación con la API falló. La respuesta está vacía. Verifique su "
+"token de acceso."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_provider.py:0
+#, python-format
+msgid "The communication with the API failed. The response is not valid JSON."
+msgstr "La comunicación con la API falló. La respuesta no es JSON válido."
+
+#. module: payment_sipago
+#: model:ir.model.fields,help:payment_sipago.field_payment_provider__code
+msgid "The technical code of this payment provider."
+msgstr "El código técnico de este proveedor de pagos."
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/const.py:0 code:addons/payment_sipago/const.py:0
+#, python-format
+msgid "There was an error in the checkout process after user payment"
+msgstr "Hubo un error en el proceso de checkout luego del pago del usuario"
+
+#. module: payment_sipago
+#: model_terms:payment.provider,done_msg:payment_sipago.payment_provider_sipago
+msgid "Tu pago se ha procesado con éxito. ¡Gracias!"
+msgstr "Tu pago se ha procesado con éxito. ¡Gracias!"
