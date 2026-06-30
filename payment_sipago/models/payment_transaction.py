@@ -4,14 +4,14 @@ from urllib.parse import quote as url_quote
 
 from werkzeug import urls
 
-from odoo import _, api, fields, models
+from odoo import _, api, models
 from odoo.addons.payment_sipago.const import (
     CURRENCY_CODES,
     ERROR_MESSAGE_MAPPING,
     ORDER_STATUS_MAPPING,
 )
 from odoo.addons.payment_sipago.controllers.main import SipagoController
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 

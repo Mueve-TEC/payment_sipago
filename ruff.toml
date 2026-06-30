@@ -1,0 +1,57 @@
+target-version = "py39"
+line-length = 120  # OCA/Code Reviewer skill: 120 chars acceptable in Odoo
+extend-exclude = ["__manifest__.py"]
+
+[lint]
+# Rules aligned with OCA Developer + Odoo Code Reviewer skills.
+# Catches real bugs, enforces import ordering, and detects security issues
+# WITHOUT aggressive code rewrites (excluded: UP, SIM, C4 which rewrite
+# super()/coding decl and simplify expressions).
+select = [
+    "E",     # pycodestyle errors (PEP8 — OCA: "Follow PEP8 for Python code")
+    "F",     # pyflakes (unused vars, undefined names, redefined)
+    "W",     # pycodestyle warnings (trailing whitespace, etc.)
+    "I",     # isort — OCA skill: "odoo imports first", `from odoo import api, fields, models, _`
+    "B",     # flake8-bugbear (common pitfalls: mutable defaults, loop vars, etc.)
+    "PERF",  # perflint (N+1 anti-patterns, list-comprehension perf)
+    "RUF",   # ruff-specific
+    "S608",  # bandit: hardcoded SQL expression — OCA: "No SQL injection vulnerabilities"
+]
+ignore = [
+    "E501",   # line too long — Odoo has long translated strings; line-length=120 guides formatter only
+    "F841",   # unused variable — common in Odoo overrides that assign for side-effects
+    "B018",   # useless expression — false positive on __manifest__.py dict
+    "B028",   # missing stacklevel on warnings — noisy in Odoo
+    "B904",   # raise from — Odoo convention doesn't always use `from`
+    "B905",   # zip without strict= — common in Odoo
+    "RUF012", # mutable class attribute — Odoo model attributes are class-level by design
+    "RUF005", # iterable unpacking instead of concat — Odoo domain lists use +
+    "RUF015", # unnecessary iterable allocation for first element — readable as-is in Odoo
+]
+
+[lint.isort]
+# OCA skill: "odoo imports first" → odoo is treated as first-party, so the
+# effective order is: stdlib → third-party → odoo → local-folder.
+# This matches real OCA modules (e.g. `import logging` then `from odoo import ...`).
+# Within a `from odoo import ...` line, names are sorted alphabetically:
+#   `from odoo import _, api, fields, models`
+known-first-party = ["odoo"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+combine-as-imports = true
+force-single-line = false
+
+[format]
+quote-style = "single"
+
+[lint.per-file-ignores]
+# __init__.py files legitimately re-export modules — F401 is expected there.
+"__init__.py" = ["F401"]
+# query.py builds SQL with static fragment concatenation (type_filter/code_filter).
+# All user data is parameterized via %s — S608 is a false positive here.
+"union_contribution/models/query.py" = ["S608"]
