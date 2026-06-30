@@ -101,7 +101,7 @@ class Paymentprovider(models.Model):
         try:
             token_data = response.json()
             self.sipago_access_token = token_data.get('access_token')
-            self.sipago_access_token_expiration = datetime.fromtimestamp(
+            self.sipago_access_token_expiration = datetime.utcfromtimestamp(
                 token_data.get('expires_in')
             )
 
