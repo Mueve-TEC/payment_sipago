@@ -55,7 +55,9 @@ class SipagoController(http.Controller):
         data = request.get_json_data()
         _logger.info('Webhook notification received from Sipago with data:\n%s', pprint.pformat(data))
 
-        if data and data.get('data', {}).get('type') == 'Payment':
+        notification_type = data.get('data', {}).get('type') if data else None
+
+        if notification_type in ('Payment', 'Refund'):
             try:
                 sipago_data = data.get('data', {})
                 order_data = sipago_data.get('order', {})
@@ -70,6 +72,7 @@ class SipagoController(http.Controller):
                     'authorization_code': payment_data.get('authorizationCode'),
                     'ref_number': payment_data.get('refNumber'),
                     'source': order_data.get('source'),
+                    'notification_type': notification_type,
                 }
 
                 # Handle the notification data using the payment transaction model

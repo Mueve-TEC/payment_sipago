@@ -139,6 +139,15 @@ class PaymentTransaction(models.Model):
         if not reference:
             raise ValidationError('Sipago: ' + _('Processing notification data with missing payment reference.'))
 
+        # Handle refund notifications: cancel the transaction
+        if notification_data.get('notification_type') == 'Refund':
+            _logger.info('Processing refund notification for transaction %s', reference)
+            if self.state != 'cancel':
+                self._set_canceled('Sipago: ' + _('Transaction was refunded.'))
+            else:
+                _logger.info('Transaction %s is already canceled, no state change needed.', reference)
+            return
+
         # Determine the UUID based on the notification source
         uuid = self._sipago_get_order_uuid(notification_data, reference)
 

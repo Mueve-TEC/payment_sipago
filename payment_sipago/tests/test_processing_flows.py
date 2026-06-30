@@ -41,7 +41,7 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_webhook_with_non_payment_type_does_not_trigger_processing(self):
-        """Test that a webhook notification with a non-Payment type does not trigger processing."""
+        """Test that a webhook notification with an unknown type does not trigger processing."""
         tx = self._create_transaction(flow='redirect')
         url = self._build_url(f'{SipagoController._webhook_url}/{tx.reference}')
         with patch(
@@ -49,6 +49,24 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
         ) as handle_notification_data_mock:
             self._make_json_request(url, data={'data': {'type': 'Other'}})
         self.assertEqual(handle_notification_data_mock.call_count, 0)
+
+    @mute_logger('odoo.addons.payment_sipago.controllers.main')
+    def test_refund_webhook_triggers_processing(self):
+        """Test that a refund webhook notification triggers processing."""
+        tx = self._create_transaction(flow='redirect')
+        url = self._build_url(f'{SipagoController._webhook_url}/{tx.reference}')
+        refund_data = {
+            'data': {
+                'type': 'Refund',
+                'order': {'uuid': 'test-uuid', 'status': 'SUCCESS', 'source': 'api_checkout'},
+                'payment': {'id': 999, 'status': 'APPROVED'},
+            }
+        }
+        with patch(
+            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
+        ) as handle_notification_data_mock:
+            self._make_json_request(url, data=refund_data)
+        self.assertEqual(handle_notification_data_mock.call_count, 1)
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_redirect_without_reference_does_not_trigger_processing(self):

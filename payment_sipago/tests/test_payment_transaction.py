@@ -170,3 +170,14 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         expected_url = f'https://cabal-checkout.preprod.geopagos.com/orders/{self.order_uuid}'
         self.assertEqual(rendering_values['api_url'], expected_url)
         self.assertEqual(tx.provider_reference, self.order_uuid)
+
+    def test_refund_notification_cancels_done_transaction(self):
+        """Test that a refund notification cancels a done transaction."""
+        tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
+        tx.state = 'done'
+        refund_data = {
+            'reference': tx.reference,
+            'notification_type': 'Refund',
+        }
+        tx._process_notification_data(refund_data)
+        self.assertEqual(tx.state, 'cancel')
