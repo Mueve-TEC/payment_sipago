@@ -27,8 +27,8 @@ ERROR_MESSAGE_MAPPING = {
 }
 
 AUTH_SERVER_URL = {
-    'DEVELOPMENT': 'https://auth.preprod.geopagos.com',
-    'PRODUCTION': 'https://auth.geopagos.com',
+    'DEVELOPMENT': 'https://auth.stg.geopagos.io',
+    'PRODUCTION': 'https://auth.prd.geopagos.io',
 }
 
 CHECKOUT_URL = {'DEVELOPMENT': 'https://api-cabal.preprod.geopagos.com', 'PRODUCTION': 'https://api.sipago.coop'}
