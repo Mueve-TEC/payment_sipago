@@ -157,3 +157,16 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             with self.assertRaises(ValidationError):
                 tx._process_notification_data(webhook_data)
             mock_request.assert_not_called()
+
+    def test_get_specific_rendering_values_creates_order_and_returns_api_url(self):
+        """Test that _get_specific_rendering_values calls the API, stores the UUID in
+        provider_reference, and returns the checkout URL as api_url."""
+        tx = self._create_transaction(flow='redirect')
+        with patch(
+            'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
+            return_value=self.order_creation_response,
+        ):
+            rendering_values = tx._get_specific_rendering_values({})
+        expected_url = f'https://cabal-checkout.preprod.geopagos.com/orders/{self.order_uuid}'
+        self.assertEqual(rendering_values['api_url'], expected_url)
+        self.assertEqual(tx.provider_reference, self.order_uuid)

@@ -28,6 +28,12 @@ class SipagoCommon(PaymentCommon):
 
         cls.order_uuid = cls.ORDER_UUID
 
+        cls.token_response = {
+            'token_type': 'Bearer',
+            'expires_in': 1744400255,
+            'access_token': 'test-access-token',
+        }
+
         cls.order_creation_response = {
             'data': {
                 'attributes': {
