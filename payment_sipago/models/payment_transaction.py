@@ -8,7 +8,9 @@ from werkzeug import urls
 from odoo import _, api, models, fields
 from odoo.exceptions import UserError, ValidationError
 
-from odoo.addons.payment_sipago.const import ORDER_STATUS_MAPPING, ERROR_MESSAGE_MAPPING
+from odoo.addons.payment_sipago.const import (
+    ORDER_STATUS_MAPPING, ERROR_MESSAGE_MAPPING, CURRENCY_CODES,
+)
 from odoo.addons.payment_sipago.controllers.main import SipagoController
 
 
@@ -78,6 +80,7 @@ class PaymentTransaction(models.Model):
         failed_url = urls.url_join(base_url, f'{SipagoController._return_url}?ref={sanitized_reference}&status=DENIED')
         
         amount = round(self.amount * 100)
+        currency_code = CURRENCY_CODES.get(self.currency_id.name, '032')
 
         return {
             "data": {
@@ -87,12 +90,12 @@ class PaymentTransaction(models.Model):
                         "failed": failed_url
                     },
                     "webhookUrl": webhook_url,
-                    "currency": "032",
+                    "currency": currency_code,
                     "items": [{
                         'id': '0',
                         'name': 'Total a pagar',
                         'unitPrice': {
-                            'currency': '032',
+                            'currency': currency_code,
                             'amount': amount
                         },
                         'quantity': 1

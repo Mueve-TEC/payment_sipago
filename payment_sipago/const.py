@@ -6,6 +6,11 @@ SUPPORTED_CURRENCIES = [
     'ARS',  # Argentine Peso - ISO code 032
 ]
 
+# Mapping of ISO 4217 currency names to Sipago numeric currency codes
+CURRENCY_CODES = {
+    'ARS': '032',  # Argentine Peso
+}
+
 # Mapping of transaction states to Sipago statuses (both order and payment statuses)
 # Format: internal_status -> [list_of_external_statuses]
 ORDER_STATUS_MAPPING = {
