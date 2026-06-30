@@ -19,7 +19,7 @@ ORDER_STATUS_MAPPING = {
 ERROR_MESSAGE_MAPPING = {
     'FAILED_CHECKOUT': _('There was an error in the checkout process after user payment'),
     'FAILED': _('Order creation failed before user payment'),
-    'cc_rejected_other_reason': _('Payment was rejected for unknown reasons'),
+    'default': _('Payment was rejected for unknown reasons'),
 }
 
 AUTH_SERVER_URL = {

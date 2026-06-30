@@ -319,5 +319,5 @@ class PaymentTransaction(models.Model):
         :rtype: str
         """
         return "Sipago: " + ERROR_MESSAGE_MAPPING.get(
-            status_detail, ERROR_MESSAGE_MAPPING['cc_rejected_other_reason']
+            status_detail, ERROR_MESSAGE_MAPPING['default']
         )
