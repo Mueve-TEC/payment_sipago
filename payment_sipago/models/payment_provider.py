@@ -142,17 +142,25 @@ class Paymentprovider(models.Model):
         self.ensure_valid_token()
 
         url = urls.url_join(CHECKOUT_URL[self.sipago_env], endpoint)
-        headers = {
-            'Authorization': f'Bearer {self.sipago_access_token}',
-            'Content-Type': 'application/vnd.api+json'
-        }
-        try:
+
+        def _send_request():
+            headers = {
+                'Authorization': f'Bearer {self.sipago_access_token}',
+                'Content-Type': 'application/vnd.api+json'
+            }
             if method == 'GET':
-                response = requests.get(
-                    url, params=payload, headers=headers, timeout=10)
-            else:
-                response = requests.post(
-                    url, json=payload, headers=headers, timeout=10)
+                return requests.get(url, params=payload, headers=headers, timeout=10)
+            return requests.post(url, json=payload, headers=headers, timeout=10)
+
+        try:
+            response = _send_request()
+            if response.status_code == 401:
+                _logger.warning(
+                    "Sipago API returned 401 at %s, refreshing the JWT token and retrying once.",
+                    url,
+                )
+                self.sipago_set_JWT_token()
+                response = _send_request()
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
