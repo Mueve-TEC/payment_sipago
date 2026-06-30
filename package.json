@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "lint:xml": "xmllint --noout $(find payment_sipago -name '*.xml') && echo 'XML lint OK'",
+        "format:xml": "prettier --write 'payment_sipago/**/*.xml'",
+        "check:xml": "prettier --check 'payment_sipago/**/*.xml'",
+        "format:py": "ruff format --config ruff.toml payment_sipago/",
+        "check:py": "ruff check --config ruff.toml payment_sipago/"
+    },
+    "devDependencies": {
+        "@prettier/plugin-xml": "^3.4.2",
+        "prettier": "^3.9.4"
+    }
+}
