@@ -111,10 +111,12 @@ class Paymentprovider(models.Model):
 
     def token_is_expired(self):
         """Check if the Sipago JWT token is expired.
-        :return: True if the token is expired, False otherwise.
+        :return: True if the token is expired or has no expiration date, False otherwise.
         :rtype: bool
         """
-        return self.sipago_access_token_expiration and fields.Datetime.to_datetime(
+        if not self.sipago_access_token_expiration:
+            return True
+        return fields.Datetime.to_datetime(
             self.sipago_access_token_expiration) < fields.Datetime.now()
 
     def ensure_valid_token(self):
