@@ -176,4 +176,9 @@ class PaymentProvider(models.Model):
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             _logger.exception('Unable to reach endpoint at %s', url)
             raise ValidationError('Sipago: ' + _('Could not establish the connection to the API.'))
-        return response.json()
+        try:
+            return response.json()
+        except ValueError:
+            raise ValidationError(
+                'Sipago: ' + _('The communication with the API failed. The response is not valid JSON.')
+            )
