@@ -1,4 +1,3 @@
-
 from odoo import _
 
 # Currency codes supported by Sipago (ARS - Argentine Peso, code 032)
@@ -14,10 +13,10 @@ CURRENCY_CODES = {
 # Mapping of transaction states to Sipago statuses (both order and payment statuses)
 # Format: internal_status -> [list_of_external_statuses]
 ORDER_STATUS_MAPPING = {
-    "pending": ["PENDING"],
-    "done": ["SUCCESS"],
-    "canceled": [ "EXPIRED"],
-    "error": ["FAILED","FAILED_CHECKOUT"],
+    'pending': ['PENDING'],
+    'done': ['SUCCESS'],
+    'canceled': ['EXPIRED'],
+    'error': ['FAILED', 'FAILED_CHECKOUT'],
 }
 
 # Error messages for Sipago states based on official documentation
@@ -28,11 +27,8 @@ ERROR_MESSAGE_MAPPING = {
 }
 
 AUTH_SERVER_URL = {
-    "DEVELOPMENT": "https://auth.preprod.geopagos.com",
-    "PRODUCTION": "https://auth.geopagos.com",
+    'DEVELOPMENT': 'https://auth.preprod.geopagos.com',
+    'PRODUCTION': 'https://auth.geopagos.com',
 }
 
-CHECKOUT_URL = {
-    "DEVELOPMENT": "https://api-cabal.preprod.geopagos.com",
-    "PRODUCTION": "https://api.sipago.coop"
-}
+CHECKOUT_URL = {'DEVELOPMENT': 'https://api-cabal.preprod.geopagos.com', 'PRODUCTION': 'https://api.sipago.coop'}

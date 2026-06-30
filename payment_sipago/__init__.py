@@ -1,9 +1,8 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from . import controllers
-from . import models
+from odoo.addons.payment import reset_payment_provider, setup_provider
 
-from odoo.addons.payment import setup_provider, reset_payment_provider
+from . import controllers, models
 
 
 def post_init_hook(cr, registry):

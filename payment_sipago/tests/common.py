@@ -2,13 +2,13 @@ from odoo.addons.payment.tests.common import PaymentCommon
 
 
 class SipagoCommon(PaymentCommon):
-
     ORDER_UUID = 'bc39016f-6fad-4ee1-b4c3-5eb8d1db8911'
 
     @classmethod
     def setUpClass(cls):
         from odoo.modules.registry import Registry
         from odoo.tools.misc import config
+
         db_name = config['db_name'] or 'admin'
         with Registry(db_name).cursor() as cr:
             cr.execute("UPDATE res_lang SET active = true WHERE code = 'en_US'")
@@ -16,11 +16,14 @@ class SipagoCommon(PaymentCommon):
 
         cls.currency_ars = cls._prepare_currency('ARS')
 
-        cls.provider = cls._prepare_provider('sipago', update_values={
-            'sipago_client_id': 'test-client-id',
-            'sipago_client_secret': 'test-client-secret',
-            'sipago_env': 'DEVELOPMENT',
-        })
+        cls.provider = cls._prepare_provider(
+            'sipago',
+            update_values={
+                'sipago_client_id': 'test-client-id',
+                'sipago_client_secret': 'test-client-secret',
+                'sipago_env': 'DEVELOPMENT',
+            },
+        )
         cls.currency = cls.currency_ars
 
         cls.order_uuid = cls.ORDER_UUID
