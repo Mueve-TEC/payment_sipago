@@ -171,13 +171,42 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         self.assertEqual(rendering_values['api_url'], expected_url)
         self.assertEqual(tx.provider_reference, self.order_uuid)
 
-    def test_refund_notification_cancels_done_transaction(self):
-        """Test that a refund notification cancels a done transaction."""
+    def test_refund_notification_creates_refund_and_cancels_original(self):
+        """Test that a refund notification creates a refund transaction and cancels the original."""
         tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
         tx.state = 'done'
         refund_data = {
             'reference': tx.reference,
             'notification_type': 'Refund',
+            'ref_number': 'test-refund-ref-001',
         }
         tx._process_notification_data(refund_data)
+
         self.assertEqual(tx.state, 'cancel')
+        self.assertIn('refunded', tx.state_message.lower())
+
+        refund_tx = self.env['payment.transaction'].search(
+            [('source_transaction_id', '=', tx.id), ('operation', '=', 'refund')]
+        )
+        self.assertEqual(len(refund_tx), 1)
+        self.assertEqual(refund_tx.state, 'done')
+        self.assertEqual(refund_tx.provider_reference, 'test-refund-ref-001')
+        self.assertEqual(refund_tx.amount, -abs(tx.amount))
+        self.assertIn('Refund', refund_tx.state_message)
+
+    def test_refund_notification_is_idempotent(self):
+        """Test that a second refund notification for the same refund does not create a duplicate."""
+        tx = self._create_transaction(flow='redirect', provider_reference=self.order_uuid)
+        tx.state = 'done'
+        refund_data = {
+            'reference': tx.reference,
+            'notification_type': 'Refund',
+            'ref_number': 'test-refund-ref-002',
+        }
+        tx._process_notification_data(refund_data)
+        tx._process_notification_data(refund_data)
+
+        refund_txs = self.env['payment.transaction'].search(
+            [('source_transaction_id', '=', tx.id), ('operation', '=', 'refund')]
+        )
+        self.assertEqual(len(refund_txs), 1)

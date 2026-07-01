@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0-20250909\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 19:49+0000\n"
-"PO-Revision-Date: 2026-06-30 19:49+0000\n"
+"POT-Creation-Date: 2026-07-01 16:08+0000\n"
+"PO-Revision-Date: 2026-07-01 16:08+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -176,6 +176,13 @@ msgstr ""
 "transacción %s."
 
 #. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Refund confirmed by Sipago."
+msgstr "Devolución de pago confirmada por Sipago."
+
+#. module: payment_sipago
 #: model:ir.model.fields.selection,name:payment_sipago.selection__payment_provider__code__sipago
 #: model:payment.provider,name:payment_sipago.payment_provider_sipago
 msgid "Sipago"
@@ -284,6 +291,13 @@ msgstr "El código técnico de este proveedor de pagos."
 #, python-format
 msgid "There was an error in the checkout process after user payment"
 msgstr "Hubo un error en el proceso de checkout luego del pago del usuario"
+
+#. module: payment_sipago
+#. odoo-python
+#: code:addons/payment_sipago/models/payment_transaction.py:0
+#, python-format
+msgid "Transaction was refunded."
+msgstr "La transacción fue devuelta."
 
 #. module: payment_sipago
 #: model_terms:payment.provider,done_msg:payment_sipago.payment_provider_sipago

@@ -139,13 +139,15 @@ class PaymentTransaction(models.Model):
         if not reference:
             raise ValidationError('Sipago: ' + _('Processing notification data with missing payment reference.'))
 
-        # Handle refund notifications: cancel the transaction
+        # Handle refund notifications: cancel the original tx and create a refund tx
         if notification_data.get('notification_type') == 'Refund':
             _logger.info('Processing refund notification for transaction %s', reference)
+            refund_tx = self._sipago_create_refund_from_notification(notification_data)
+            refund_tx._set_done('Sipago: ' + _('Refund confirmed by Sipago.'))
             if self.state != 'cancel':
                 self._set_canceled('Sipago: ' + _('Transaction was refunded.'))
-            else:
-                _logger.info('Transaction %s is already canceled, no state change needed.', reference)
+            self._sipago_cancel_linked_orders_on_refund()
+            self.env.ref('payment.cron_post_process_payment_tx')._trigger()
             return
 
         # Determine the UUID based on the notification source
@@ -166,6 +168,48 @@ class PaymentTransaction(models.Model):
 
         # Process transaction based on status
         self._sipago_handle_transaction_status(order_status, payment_status, payment_error, reference, uuid)
+
+    def _sipago_create_refund_from_notification(self, notification_data):
+        """Create or find a refund transaction from a Sipago refund notification.
+
+        :param dict notification_data: The refund notification data.
+        :return: The refund transaction.
+        :rtype: recordset of `payment.transaction`
+        """
+        refund_ref = notification_data.get('ref_number') or notification_data.get('payment_id')
+        existing_refund = self.env['payment.transaction'].search(
+            [
+                ('source_transaction_id', '=', self.id),
+                ('operation', '=', 'refund'),
+                ('provider_reference', '=', str(refund_ref)),
+            ],
+            limit=1,
+        )
+        if existing_refund:
+            _logger.info(
+                'Found existing refund transaction %s for original %s', existing_refund.reference, self.reference
+            )
+            return existing_refund
+
+        refund_tx = self._create_refund_transaction()
+        refund_tx.provider_reference = str(refund_ref)
+        _logger.info(
+            'Created refund transaction %s for original transaction %s (ref: %s)',
+            refund_tx.reference,
+            self.reference,
+            refund_ref,
+        )
+        return refund_tx
+
+    def _sipago_cancel_linked_orders_on_refund(self):
+        """Cancel the sale orders linked to this transaction when a refund is received."""
+        for order in self.sale_order_ids.sudo().filtered(lambda so: so.state in ('sale', 'done')):
+            _logger.info(
+                'Canceling sale order %s due to refund of transaction %s',
+                order.name,
+                self.reference,
+            )
+            order.sudo()._action_cancel()
 
     def _sipago_get_order_uuid(self, notification_data, reference):
         """Extract the order UUID from notification data.

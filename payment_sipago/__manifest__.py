@@ -8,7 +8,7 @@
     'author': "Mueve",
     'website': "https://github.com/Mueve-TEC",
     'description': " ",  # Non-empty string to avoid loading the README file.
-    'depends': ['payment'],
+    'depends': ['payment', 'website_sale'],
     'data': [
         'views/payment_sipago_templates.xml',
         'views/payment_provider_views.xml',
