@@ -183,7 +183,10 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         tx._process_notification_data(refund_data)
 
         self.assertEqual(tx.state, 'cancel')
-        self.assertIn('refunded', tx.state_message.lower())
+        self.assertIn(
+            tx.state_message,
+            ('Sipago: Transaction was refunded.', 'Sipago: La transacción fue devuelta.'),
+        )
 
         refund_tx = self.env['payment.transaction'].search(
             [('source_transaction_id', '=', tx.id), ('operation', '=', 'refund')]
@@ -192,7 +195,10 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
         self.assertEqual(refund_tx.state, 'done')
         self.assertEqual(refund_tx.provider_reference, 'test-refund-ref-001')
         self.assertEqual(refund_tx.amount, -abs(tx.amount))
-        self.assertIn('Refund', refund_tx.state_message)
+        self.assertIn(
+            refund_tx.state_message,
+            ('Sipago: Refund confirmed by Sipago.', 'Sipago: Devolución de pago confirmada por Sipago.'),
+        )
 
     def test_refund_notification_is_idempotent(self):
         """Test that a second refund notification for the same refund does not create a duplicate."""
