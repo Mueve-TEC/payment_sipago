@@ -21,7 +21,7 @@ Este módulo fue desarrollado en el marco del programa SOL3 y de una beca de ext
 
 ## Requisitos
 
-- **Odoo**: Versión 16.0 o superior
+- **Odoo**: Versión 19.0 o superior
 - **Dependencias**: módulo `payment` de Odoo
 
 ## Instalación

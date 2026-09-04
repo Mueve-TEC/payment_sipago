@@ -15,9 +15,7 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
         data."""
         self._create_transaction(flow='redirect')
         url = self._build_url(SipagoController._return_url)
-        with patch(
-            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
-        ) as handle_notification_data_mock:
+        with patch('odoo.addons.payment.models.payment_transaction.PaymentTransaction._process') as process_mock:
             self._make_http_get_request(
                 url,
                 params={
@@ -25,7 +23,7 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
                     'status': 'APPROVED',
                 },
             )
-        self.assertEqual(handle_notification_data_mock.call_count, 1)
+        self.assertEqual(process_mock.call_count, 1)
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_webhook_notification_triggers_processing(self):
@@ -33,22 +31,18 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
         notification data."""
         tx = self._create_transaction(flow='redirect')
         url = self._build_url(f'{SipagoController._webhook_url}/{tx.reference}')
-        with patch(
-            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
-        ) as handle_notification_data_mock:
+        with patch('odoo.addons.payment.models.payment_transaction.PaymentTransaction._process') as process_mock:
             self._make_json_request(url, data=self.webhook_notification_data)
-        self.assertEqual(handle_notification_data_mock.call_count, 1)
+        self.assertEqual(process_mock.call_count, 1)
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_webhook_with_non_payment_type_does_not_trigger_processing(self):
         """Test that a webhook notification with an unknown type does not trigger processing."""
         tx = self._create_transaction(flow='redirect')
         url = self._build_url(f'{SipagoController._webhook_url}/{tx.reference}')
-        with patch(
-            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
-        ) as handle_notification_data_mock:
+        with patch('odoo.addons.payment.models.payment_transaction.PaymentTransaction._process') as process_mock:
             self._make_json_request(url, data={'data': {'type': 'Other'}})
-        self.assertEqual(handle_notification_data_mock.call_count, 0)
+        self.assertEqual(process_mock.call_count, 0)
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_refund_webhook_triggers_processing(self):
@@ -62,19 +56,15 @@ class TestProcessingFlows(SipagoCommon, PaymentHttpCommon):
                 'payment': {'id': 999, 'status': 'APPROVED'},
             }
         }
-        with patch(
-            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
-        ) as handle_notification_data_mock:
+        with patch('odoo.addons.payment.models.payment_transaction.PaymentTransaction._process') as process_mock:
             self._make_json_request(url, data=refund_data)
-        self.assertEqual(handle_notification_data_mock.call_count, 1)
+        self.assertEqual(process_mock.call_count, 1)
 
     @mute_logger('odoo.addons.payment_sipago.controllers.main')
     def test_redirect_without_reference_does_not_trigger_processing(self):
         """Test that a redirect notification without a reference does not trigger processing."""
         self._create_transaction(flow='redirect')
         url = self._build_url(SipagoController._return_url)
-        with patch(
-            'odoo.addons.payment.models.payment_transaction.PaymentTransaction._handle_notification_data'
-        ) as handle_notification_data_mock:
+        with patch('odoo.addons.payment.models.payment_transaction.PaymentTransaction._process') as process_mock:
             self._make_http_get_request(url, params={'status': 'APPROVED'})
-        self.assertEqual(handle_notification_data_mock.call_count, 0)
+        self.assertEqual(process_mock.call_count, 0)

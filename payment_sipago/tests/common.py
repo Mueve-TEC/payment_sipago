@@ -6,15 +6,9 @@ class SipagoCommon(PaymentCommon):
 
     @classmethod
     def setUpClass(cls):
-        from odoo.modules.registry import Registry
-        from odoo.tools.misc import config
-
-        db_name = config['db_name'] or 'admin'
-        with Registry(db_name).cursor() as cr:
-            cr.execute("UPDATE res_lang SET active = true WHERE code = 'en_US'")
         super().setUpClass()
 
-        cls.currency_ars = cls._prepare_currency('ARS')
+        cls.currency_ars = cls._enable_currency('ARS')
 
         cls.provider = cls._prepare_provider(
             'sipago',

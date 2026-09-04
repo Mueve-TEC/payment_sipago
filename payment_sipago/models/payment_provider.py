@@ -1,6 +1,6 @@
 import logging
 import pprint
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 from werkzeug import urls
@@ -93,7 +93,10 @@ class PaymentProvider(models.Model):
         try:
             token_data = response.json()
             self.sipago_access_token = token_data.get('access_token')
-            self.sipago_access_token_expiration = datetime.utcfromtimestamp(token_data.get('expires_in'))
+            # Naive UTC datetime (deprecated `utcfromtimestamp` is not usable on Python 3.12+).
+            self.sipago_access_token_expiration = datetime.fromtimestamp(
+                token_data.get('expires_in'), tz=timezone.utc
+            ).replace(tzinfo=None)
 
         except (ValueError, TypeError):
             raise ValidationError(_('Sipago: Invalid response format while retrieving JWT token.'))

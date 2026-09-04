@@ -86,7 +86,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'done')
 
     @mute_logger('odoo.addons.payment_sipago.models.payment_transaction')
@@ -98,7 +98,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_pending,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'pending')
 
     @mute_logger('odoo.addons.payment_sipago.models.payment_transaction')
@@ -110,7 +110,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_expired,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'cancel')
 
     @mute_logger('odoo.addons.payment_sipago.models.payment_transaction')
@@ -122,7 +122,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_failed,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'error')
 
     def test_processing_notification_data_is_idempotent_when_done(self):
@@ -132,13 +132,13 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'done')
         with patch(
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request',
             return_value=self.verification_data_success,
         ):
-            tx._process_notification_data(self.redirect_notification_data)
+            tx._process('sipago', self.redirect_notification_data)
         self.assertEqual(tx.state, 'done')
 
     @mute_logger('odoo.addons.payment_sipago.models.payment_transaction')
@@ -155,7 +155,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'odoo.addons.payment_sipago.models.payment_provider.PaymentProvider._sipago_make_request'
         ) as mock_request:
             with self.assertRaises(ValidationError):
-                tx._process_notification_data(webhook_data)
+                tx._process('sipago', webhook_data)
             mock_request.assert_not_called()
 
     def test_get_specific_rendering_values_creates_order_and_returns_api_url(self):
@@ -180,7 +180,7 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'notification_type': 'Refund',
             'ref_number': 'test-refund-ref-001',
         }
-        tx._process_notification_data(refund_data)
+        tx._process('sipago', refund_data)
 
         self.assertEqual(tx.state, 'cancel')
         self.assertIn(
@@ -209,8 +209,8 @@ class TestPaymentTransaction(SipagoCommon, PaymentHttpCommon):
             'notification_type': 'Refund',
             'ref_number': 'test-refund-ref-002',
         }
-        tx._process_notification_data(refund_data)
-        tx._process_notification_data(refund_data)
+        tx._process('sipago', refund_data)
+        tx._process('sipago', refund_data)
 
         refund_txs = self.env['payment.transaction'].search(
             [('source_transaction_id', '=', tx.id), ('operation', '=', 'refund')]

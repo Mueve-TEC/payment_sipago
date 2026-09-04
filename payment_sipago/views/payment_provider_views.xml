@@ -6,27 +6,27 @@
         <field name="inherit_id" ref="payment.payment_provider_form" />
         <field name="arch" type="xml">
             <group name="provider_credentials" position="inside">
-                <group attrs="{'invisible': [('code', '!=', 'sipago')]}">
+                <group invisible="code != 'sipago'">
                     <field
                         name="sipago_client_id"
                         string="Client ID"
-                        attrs="{'required': [('code', '=', 'sipago'), ('state', '!=', 'disabled')]}"
+                        required="code == 'sipago' and state != 'disabled'"
                         password="True"
                     />
                     <field
                         name="sipago_client_secret"
                         string="Client Secret"
-                        attrs="{'required': [('code', '=', 'sipago'), ('state', '!=', 'disabled')]}"
+                        required="code == 'sipago' and state != 'disabled'"
                         password="True"
                     />
                 </group>
             </group>
             <page name="configuration" position="inside">
-                <group string="Sipago Configuration" attrs="{'invisible': [('code', '!=', 'sipago')]}">
+                <group string="Sipago Configuration" invisible="code != 'sipago'">
                     <field
                         name="sipago_env"
                         string="Operation Mode"
-                        attrs="{'required': [('code', '=', 'sipago'), ('state', '!=', 'disabled')]}"
+                        required="code == 'sipago' and state != 'disabled'"
                         options="{'no_create': True, 'no_open': True}"
                     />
                 </group>

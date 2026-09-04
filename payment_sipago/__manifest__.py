@@ -1,7 +1,7 @@
 
 {
     'name': "Payment Provider: Sipago",
-    'version': '16.0.1.1.0',
+    'version': '19.0.1.0.0',
     'category': 'Accounting/Payment Providers',
     'sequence': 350,
     'summary': "A checkout payment provider for debit and credit cards.",
@@ -16,6 +16,8 @@
         'data/payment_provider_data.xml',  # Depends on views/payment_sipago_templates.xml
     ],
     'application': False,
+    'installable': True,
+    'external_dependencies': {'python': ['requests']},
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',
     'license': 'AGPL-3',

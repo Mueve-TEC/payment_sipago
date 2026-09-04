@@ -99,59 +99,51 @@ class PaymentTransaction(models.Model):
             }
         }
 
-    def _get_tx_from_notification_data(self, provider_code, notification_data):
-        """Override of `payment` to find the transaction based on Sipago data.
+    def _extract_amount_data(self, payment_data):
+        """Override of `payment` to opt out of the amount validation.
 
-        :param str provider_code: The code of the provider that handled the transaction.
-        :param dict notification_data: The notification data sent by the provider.
-        :return: The transaction if found.
-        :rtype: recordset of `payment.transaction`
-        :raise ValidationError: If inconsistent data were received.
-        :raise ValidationError: If the data match no transaction.
+        Sipago notifications do not carry the paid amount, so returning `None` makes
+        `payment` skip its amount check for Sipago transactions.
         """
-        tx = super()._get_tx_from_notification_data(provider_code, notification_data)
-        if provider_code != 'sipago' or len(tx) == 1:
-            return tx
+        if self.provider_code != 'sipago':
+            return super()._extract_amount_data(payment_data)
+        return None
 
-        reference = notification_data.get('reference')
-        if not reference:
-            raise ValidationError('Sipago: ' + _('Received data with missing reference.'))
-
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'sipago')])
-        if not tx:
-            raise ValidationError('Sipago: ' + _('No transaction found matching reference %s.', reference))
-        return tx
-
-    def _process_notification_data(self, notification_data):
+    def _apply_updates(self, payment_data):
         """Override of `payment` to process the transaction based on Sipago data.
 
-        Note: self.ensure_one() from `_process_notification_data`
+        Note: self.ensure_one() from `_process`
 
-        :param dict notification_data: The notification data sent by the provider.
+        :param dict payment_data: The payment data sent by the provider.
         :return: None
         :raise ValidationError: If inconsistent data were received.
         """
-        super()._process_notification_data(notification_data)
+        super()._apply_updates(payment_data)
         if self.provider_code != 'sipago':
             return
 
-        reference = notification_data.get('reference')
+        reference = payment_data.get('reference')
         if not reference:
             raise ValidationError('Sipago: ' + _('Processing notification data with missing payment reference.'))
 
         # Handle refund notifications: cancel the original tx and create a refund tx
-        if notification_data.get('notification_type') == 'Refund':
+        if payment_data.get('notification_type') == 'Refund':
             _logger.info('Processing refund notification for transaction %s', reference)
-            refund_tx = self._sipago_create_refund_from_notification(notification_data)
-            refund_tx._set_done('Sipago: ' + _('Refund confirmed by Sipago.'))
+            refund_tx = self._sipago_create_refund_from_notification(payment_data)
+            refund_tx._set_done(state_message='Sipago: ' + _('Refund confirmed by Sipago.'))
             if self.state != 'cancel':
-                self._set_canceled('Sipago: ' + _('Transaction was refunded.'))
+                # A done transaction is canceled when refunded, which is not an allowed default
+                # source state of `_set_canceled`.
+                self._set_canceled(
+                    state_message='Sipago: ' + _('Transaction was refunded.'),
+                    extra_allowed_states=('done',),
+                )
             self._sipago_cancel_linked_orders_on_refund()
             self.env.ref('payment.cron_post_process_payment_tx')._trigger()
             return
 
         # Determine the UUID based on the notification source
-        uuid = self._sipago_get_order_uuid(notification_data, reference)
+        uuid = self._sipago_get_order_uuid(payment_data, reference)
 
         # Verify the notification data
         verified_order_data = self._sipago_fetch_order_data(uuid, reference)
@@ -169,14 +161,14 @@ class PaymentTransaction(models.Model):
         # Process transaction based on status
         self._sipago_handle_transaction_status(order_status, payment_status, payment_error, reference, uuid)
 
-    def _sipago_create_refund_from_notification(self, notification_data):
+    def _sipago_create_refund_from_notification(self, payment_data):
         """Create or find a refund transaction from a Sipago refund notification.
 
-        :param dict notification_data: The refund notification data.
+        :param dict payment_data: The refund notification data.
         :return: The refund transaction.
         :rtype: recordset of `payment.transaction`
         """
-        refund_ref = notification_data.get('ref_number') or notification_data.get('payment_id')
+        refund_ref = payment_data.get('ref_number') or payment_data.get('payment_id')
         existing_refund = self.env['payment.transaction'].search(
             [
                 ('source_transaction_id', '=', self.id),
@@ -191,8 +183,7 @@ class PaymentTransaction(models.Model):
             )
             return existing_refund
 
-        refund_tx = self._create_refund_transaction()
-        refund_tx.provider_reference = str(refund_ref)
+        refund_tx = self._create_child_transaction(self.amount, True, provider_reference=str(refund_ref))
         _logger.info(
             'Created refund transaction %s for original transaction %s (ref: %s)',
             refund_tx.reference,

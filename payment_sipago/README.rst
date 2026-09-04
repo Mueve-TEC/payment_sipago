@@ -38,7 +38,7 @@ Características
 Requisitos
 ==========
 
-- **Odoo**: Versión 16.0 o superior
+- **Odoo**: Versión 19.0 o superior
 - **Dependencias**: módulo `payment` de Odoo
 
 Instalación

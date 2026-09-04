@@ -30,13 +30,15 @@ class SipagoController(http.Controller):
 
         if transaction_reference:
             # Structure the data similar to webhook format for consistency
-            notification_data = {
+            payment_data = {
                 'reference': transaction_reference,
                 'payment_status': data.get('status'),
                 'source': 'return_url',
             }
 
-            request.env['payment.transaction'].sudo()._handle_notification_data('sipago', notification_data)
+            tx_sudo = request.env['payment.transaction'].sudo()._search_by_reference('sipago', payment_data)
+            if tx_sudo:
+                tx_sudo._process('sipago', payment_data)
         else:
             _logger.warning('No transaction reference found in Sipago return data')
 
@@ -63,7 +65,7 @@ class SipagoController(http.Controller):
                 order_data = sipago_data.get('order', {})
                 payment_data = sipago_data.get('payment', {})
 
-                notification_data = {
+                payment_data_vals = {
                     'reference': reference,
                     'order_uuid': order_data.get('uuid'),
                     'order_status': order_data.get('status'),
@@ -75,11 +77,13 @@ class SipagoController(http.Controller):
                     'notification_type': notification_type,
                 }
 
-                # Handle the notification data using the payment transaction model
-                request.env['payment.transaction'].sudo()._handle_notification_data('sipago', notification_data)
+                # Process the payment data using the payment transaction model
+                tx_sudo = request.env['payment.transaction'].sudo()._search_by_reference('sipago', payment_data_vals)
+                if tx_sudo:
+                    tx_sudo._process('sipago', payment_data_vals)
 
             except ValidationError:  # Acknowledge the notification to avoid getting spammed.
-                _logger.exception('Unable to handle the notification data; skipping to acknowledge')
+                _logger.exception('Unable to handle the payment data; skipping to acknowledge')
             except Exception as e:
                 _logger.exception('Error processing Sipago webhook: %s', str(e))
         else:
